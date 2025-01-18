@@ -1,0 +1,8 @@
+"0","#| context: valuebox-nocs-medals"
+"0",""
+"0","bslib::value_box("
+"0","  title = tags$h3(""NOCs with medalists"", style = ""cont-size: 20px;""),"
+"0","  #theme = ""dash_gold"","
+"0","  showcase = bs_icon(""calendar3""),"
+"0","  value = tags$p(n_noc_medals, style = ""font-size: 42px; font-face: bold;"")"
+"0",")"

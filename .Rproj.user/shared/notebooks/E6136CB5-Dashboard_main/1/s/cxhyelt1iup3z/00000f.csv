@@ -1,0 +1,6 @@
+"0","### Participating athletes
+athletes_dat <- read.delim(""data/teams.csv"", sep = "","", header = T)
+"
+"2","Warning: cannot open file 'data/teams.csv': No such file or directory"
+"2","Error in file(file, ""rt"") : cannot open the connection
+"

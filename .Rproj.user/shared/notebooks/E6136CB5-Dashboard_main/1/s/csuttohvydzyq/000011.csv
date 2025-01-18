@@ -1,0 +1,8 @@
+"0","#| context: setup"
+"0","#| label: r-session"
+"0",""
+"0","library(bslib)"
+"0","library(bsicons)"
+"2","Warning: package ‘bsicons’ was built under R version 4.3.3"
+"0","library(htmltools)"
+"0","library(tidyverse)"
