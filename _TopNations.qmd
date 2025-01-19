@@ -1,8 +1,63 @@
 <!-- Proportion of nations with medals -->
 
 ```{r}
-#| label: nations-overview
+#| label: country-codes
+
+country_codes <- read.delim("data/countries_codes_and_coordinates.csv", header = T, sep = ",")
+# remove unwanted spaces
+country_codes$Alpha.2.code <- gsub(" ", "", country_codes$Alpha.2.code)
 ```
 
 <!-- Nations by medals -->
+
+<!-- Can I include country flags??? -->
+```{r}
+#| label: table-nations-ranking
+
+# pick data to show + define column order
+nations_dat |> 
+  left_join(select(country_codes, Country, `Alpha.2.code`), by = c("country_long" = "Country")) |> 
+  # a handful of manual fixes are required
+  mutate(`Alpha.2.code` = case_when(
+    country_code == "USA" ~ "US",
+    country_code == "CHN" ~ "CN",
+    country_code == "GBR" ~ "GB",
+    country_code == "KOR" ~ "KR",
+    country_code == "IRI" ~ "IR",
+    country_code == "CZE" ~ "CZ",
+    country_code == "TPE" ~ "TW", # this is Taiwan - are they indeed synonyms?
+    country_code == "HKG" ~ "HK",
+    country_code == "TUR" ~ "TR",
+    country_code == "PRK" ~ "KP",
+    country_code == "MDA" ~ "MD",
+    country_code == "KOS" ~ NA,
+    TRUE ~ `Alpha.2.code`
+  )) |> # ranking is only present as a column index (row name)
+  mutate(ranking = rownames(nations_dat)) |> 
+  select(ranking, `Alpha.2.code`, country_code, country_long, contains("Medal"), Total) |> 
+  gt() |> 
+  # add country flags
+  fmt_flag(columns = `Alpha.2.code`) |> 
+  cols_merge(c("Alpha.2.code", "country_code")) |> 
+  # "string" column names
+  cols_label(ranking = "Ranking", `Alpha.2.code` = "Country \n code",  country_long = "Country",
+             # replace medals colour by icons
+             `Gold.Medal` = html(as.character(icon_style(fontawesome("medal"), scale = 1.75, fill = col_medals["Gold"]))),
+             `Silver.Medal` = html(as.character(icon_style(fontawesome("medal"), scale = 1.75, fill = col_medals["Silver"]))),
+             `Bronze.Medal` = html(as.character(icon_style(fontawesome("medal"), scale = 1.75, fill = col_medals["Bronze"])))) |> 
+  # general table formating
+  gt::tab_options(column_labels.font.weight = "bold",
+                  column_labels.padding.horizontal = px(10),
+                  table.background.color = "transparent",
+                  table.font.color = "grey50",
+                  table.font.color.light = "black",
+                  table.width = pct(100)) |> 
+  cols_align(align = "center", columns = !contains("Country")) |> 
+  # add interactivity
+  opt_interactive(
+    use_pagination = T, use_page_size_select = T, page_size_default = 10,
+    use_sorting = T,
+    use_search = T,
+  )
+```
 

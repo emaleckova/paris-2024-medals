@@ -10,26 +10,28 @@ format:
 
 # About
 
-**Motivation:**  
-
-I made this website to practice use of Quarto dashboards and deployment to public.
-
-----------------------------------------------------------------------------------
-
-Let's start about few basic and some fun facts about the 32^nd^ Summer olympics held in Paris from July 26 to August 11, 2024.  
-
 ```{r}
 #| context: setup
 #| label: r-session
 
+library(htmltools)
 library(bslib)
 library(bsicons)
-library(htmltools)
+library(icons)
 
 library(tidyverse)
 
-library(DT)
+library(gt)
 ```
+
+```{r}
+#| label: general-visuals
+
+### Medal colours
+col_medals <- c("#FCC65B", "#E5E5E5", "#E0BD95")
+names(col_medals) <- c("Gold", "Silver", "Bronze")
+```
+
 
 ```{r}
 #| label: get-data
@@ -115,6 +117,19 @@ bslib::value_box(
   value = tags$p(n_noc_medals, style = "font-size: 42px; font-face: bold;")
 )
 ```
+
+## ROW: Facts about the Games
+
+These are some impressive numbers about the 32^nd^ Summer olympics held in Paris from July 26 to August 11, 2024. The Paris Games were exceptional in many other aspects - let's explore a selection together.    
+
+
+----------------------------------------------------------------------------------
+
+**Motivation:**  
+
+I made this website to practice use of Quarto dashboards and deployment to public.
+
+----------------------------------------------------------------------------------
 
 
 
