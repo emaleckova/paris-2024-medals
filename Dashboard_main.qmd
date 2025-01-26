@@ -14,14 +14,19 @@ format:
 #| context: setup
 #| label: r-session
 
+# data wrangling
+library(tidyverse)
+# html and icons
 library(htmltools)
 library(bslib)
 library(bsicons)
 library(icons)
-
-library(tidyverse)
-
+# tables
 library(gt)
+# maps
+library(rnaturalearth)
+library(sf)
+library(cartogram)
 ```
 
 ```{r}
@@ -136,7 +141,7 @@ I made this website to practice use of Quarto dashboards and deployment to publi
 <!-- -------- -->
 <!-- New page -->
 
-# Top nations
+# Participating nations {orientation="columns"}
 
 {{< include _TopNations.qmd >}}
 
