@@ -63,7 +63,7 @@ map_teams_eu_grouped <- map_teams_eu_grouped |>
   st_as_sf()
 ```
 
-#### Global
+#### World
 
 ```{r}
 #| label: figure-participants-eu-grouped
@@ -102,17 +102,20 @@ ggplot() +
 
 dorl <- map_teams |> 
   filter(continent == "Europe") |> 
-  st_as_sf() |> 
+  # this is important to remove "territories" not on the main continent (except GB and IRL)
+  st_crop(xmin = -800000, xmax = 3500000, ymin = 3100000, ymax = 7343000) |> 
   cartogram_dorling(
-  weight = "n_participants",
-  k = 1, m_weight = 1, itermax = 1000
+    weight = "n_participants",
+    k = 2, m_weight = 1, itermax = 1000
   )
 
-ggplot() + 
-  # World basemap
-  geom_sf(
-    filter(world, continent == "Europe"), mapping = aes(geometry = geometry),
-    fill = "grey80", colour = "white") +
+
+# crop basic map first
+world |> 
+  filter(continent == "Europe") |> 
+  st_crop(xmin = -800000, xmax = 3500000, ymin = 3100000, ymax = 7343000) |>
+  ggplot() +
+  geom_sf(mapping = aes(geometry = geometry), fill = "grey80", colour = "white") +
   # team sizes
   geom_sf(
     dorl, mapping = aes(geometry = geometry, fill = continent),
