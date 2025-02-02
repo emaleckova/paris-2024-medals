@@ -1,9 +1,17 @@
 ---
 title: "Paris 2024 Medals"
+
+
 format:
   dashboard:
     logo: images/Paris2024_Mono_Blanc.png
     orientation: rows
+embed-resources: true
+
+execute:
+  echo: false
+  warning: false
+  error: false
 ---
 
 <!-- H1 = PAGE -->
@@ -16,6 +24,7 @@ format:
 
 # data wrangling
 library(tidyverse)
+library()
 # html and icons
 library(htmltools)
 library(bslib)
@@ -23,10 +32,15 @@ library(bsicons)
 library(icons)
 # tables
 library(gt)
+library(tabulapdf) # from pdf
 # maps
 library(rnaturalearth)
 library(sf)
 library(cartogram)
+# plots
+library(ggiraph)
+library(scatterpie)
+library(gganimate)
 ```
 
 ```{r}
@@ -51,6 +65,11 @@ athletes_dat <- read.delim("data/athletes.csv", sep = ",", header = T)
 
 ### Nations with medals
 nations_dat <- read.delim("data/medals_total.csv", sep = ",", header = T)
+
+### Medalists
+medalists_dat <- read.delim("data/medallists.csv", sep = ",", header = T)
+# this will unify terms used for the medal types
+medalists_dat$medal_type <- gsub(" Medal", "", medalists_dat$medal_type)
 
 ### Schedule
 schedule_dat <- read.delim("data/schedules.csv", sep = ",", header = T)
@@ -123,20 +142,80 @@ bslib::value_box(
 )
 ```
 
+## ROW: Athletes by gender
+```{r}
+#| label: get-athletes-by-gender
+
+n_men <- athletes_dat |> 
+  filter(gender == "Male" & function. == "Athlete") |> 
+  select(country, name, disciplines) |> 
+  distinct() |> 
+  nrow()
+
+n_women <- athletes_dat |> 
+  filter(gender == "Female" & function. == "Athlete") |> 
+  select(country, name, disciplines) |> 
+  distinct() |> 
+  nrow()
+```
+
+```{r}
+#| context: valuebox-male-athletes
+
+bslib::value_box(
+  title = tags$h3("Male athletes", style = "cont-size: 20px;"),
+  #theme = "dash_gold",
+  showcase = bs_icon("gender-male"),
+  value = tags$p(n_men, style = "font-size: 42px; font-face: bold;")
+)
+```
+
+```{r}
+#| context: valuebox-female-athletes
+
+bslib::value_box(
+  title = tags$h3("Female athletes", style = "cont-size: 20px;"),
+  #theme = "dash_gold",
+  showcase = bs_icon("gender-female"),
+  value = tags$p(n_women, style = "font-size: 42px; font-face: bold;")
+)
+```
+
+
+## ROW: Historical female participation
+
+<!-- {gganimate} for male vs female in history? -->
+
+```{r}
+#| label: get-female-participation-data
+
+source("Rscripts/ExtractHistoricalFemaleData.R")
+remove(female_tbls)
+```
+
+```{r}
+#| label: figure-historical-female-participation
+
+p <- ggplot(female_dat, aes(x = Year, y = Prcnt_women_participants)) +
+  geom_point(aes(size = Prcnt_women_participants)) +
+  labs(title = "Participants by gender") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 0.5, vjust = 0.5),
+        axis.title = element_blank(),
+        legend.position = "none")
+
+anim <- p +
+  transition_states(Year,
+                    transition_length = 2,
+                    state_length = 1)
+
+anim
+```
+
+
 ## ROW: Facts about the Games
 
 These are some impressive numbers about the 32^nd^ Summer olympics held in Paris from July 26 to August 11, 2024. The Paris Games were exceptional in many other aspects - let's explore a selection together.    
-
-
-----------------------------------------------------------------------------------
-
-**Motivation:**  
-
-I made this website to practice use of Quarto dashboards and deployment to public.
-
-----------------------------------------------------------------------------------
-
-
 
 <!-- -------- -->
 <!-- New page -->
@@ -145,10 +224,19 @@ I made this website to practice use of Quarto dashboards and deployment to publi
 
 {{< include _TopNations.qmd >}}
 
-# Top medallists
+# Top medallists {orientation="rowss"}
 
 {{< include _TopMedallists.qmd >}}
 
 
+<!-- IDEAS: Total men and women, disciplines with most events/medals? -->
 
+# About
 
+----------------------------------------------------------------------------------
+
+**Motivation:**  
+
+I made this website to practice use of Quarto dashboards and deployment to public.
+
+----------------------------------------------------------------------------------
