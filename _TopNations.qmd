@@ -52,8 +52,8 @@ eu_grouped <- map_teams |>
   filter(continent == "Europe") |> 
   group_by(continent) |> 
   summarize(n_participants = sum(n_participants)) |> 
-  mutate(country_long = "EU",
-         country_code = "EU",
+  mutate(country_long = "Europe",
+         country_code = "Europe",
          name_long = "European countries",
          iso_a2 = NA,
          geometry = map_teams[map_teams$country_code == "CZE", ]$geometry)
@@ -67,6 +67,7 @@ map_teams_eu_grouped <- map_teams_eu_grouped |>
 
 ```{r}
 #| label: figure-participants-eu-grouped
+#| out-width: "100%"
 
 dorl <- cartogram_dorling(
   map_teams_eu_grouped, weight = "n_participants",
@@ -78,14 +79,15 @@ dorl <- cartogram_dorling(
 col_continents <- c("#524595", "#0392cf", "#e86af0", "#ffbf00", "#95CA3E", "#F26923")
 names(col_continents) <- sort(unique(map_teams$continent))
 
-ggplot() + 
+p_world <- ggplot() + 
   # World basemap
   geom_sf(
     filter(world, admin != "Antarctica"), mapping = aes(geometry = geometry),
     fill = "grey80", colour = "white") +
   # team sizes
-  geom_sf(
-    dorl, mapping = aes(geometry = geometry, fill = continent),
+  geom_sf_interactive(
+    dorl, mapping = aes(geometry = geometry, fill = continent,
+                        tooltip = paste0(country_long, ": ", n_participants)),
     color = alpha("white",0.2)
     ) +
   scale_fill_manual(values = alpha(col_continents, 0.8)) +
@@ -93,6 +95,15 @@ ggplot() +
   theme(panel.background = element_rect(fill = "transparent", color = NA),
         plot.background = element_rect(fill = "transparent", color = NA),
         legend.position = "none")
+
+girafe(ggobj = p_world,
+       width_svg = 50, height_svg = 40) |> 
+  girafe_options(
+    opts_tooltip(
+      use_fill = FALSE,
+      css = "color:black;"
+    )
+  )
 ```
 
 #### Europe
@@ -111,14 +122,15 @@ dorl <- map_teams |>
 
 
 # crop basic map first
-world |> 
+p_eu <- world |> 
   filter(continent == "Europe") |> 
   st_crop(xmin = -800000, xmax = 3500000, ymin = 3100000, ymax = 7343000) |>
   ggplot() +
   geom_sf(mapping = aes(geometry = geometry), fill = "grey80", colour = "white") +
   # team sizes
-  geom_sf(
-    dorl, mapping = aes(geometry = geometry, fill = continent),
+  geom_sf_interactive(
+    dorl, mapping = aes(geometry = geometry, fill = continent,
+                        tooltip = paste0(country_long, ": ", n_participants)),
     color = alpha("white",0.2)
     ) +
   scale_fill_manual(values = alpha(col_continents, 0.8)) +
@@ -126,6 +138,15 @@ world |>
   theme(panel.background = element_rect(fill = "transparent", color = NA),
         plot.background = element_rect(fill = "transparent", color = NA),
         legend.position = "none")
+
+girafe(ggobj = p_eu,
+       width_svg = 50, height_svg = 40) |> 
+  girafe_options(
+    opts_tooltip(
+      use_fill = FALSE,
+      css = "color:black;"
+    )
+  )
 ```
 
 
@@ -188,7 +209,7 @@ tab_nations <- tab_nations |>
 
 tab_nations |> 
 # ranking is only present as a column index (row name)
-  mutate(ranking = rownames(nations_dat),
+  mutate(ranking = as.numeric(rownames(nations_dat)),
         flag = ifelse(iso_a2 %in% ccodes, iso_a2, NA)) |> 
   select(ranking, flag, iso_a2, country_code, country_long, contains("Medal"), Total) |> 
   gt() |> 
@@ -203,19 +224,27 @@ tab_nations |>
   ) |> 
   cols_hide(columns = "flag") |> 
   # "string" column names
-  cols_label(ranking = "Ranking", iso_a2 = " ", country_code = "Country \n code", country_long = "Country",
-             # replace medals colour by icons
-             `Gold.Medal` = html(as.character(icon_style(fontawesome("medal"), scale = 1.75, fill = col_medals["Gold"]))),
-             `Silver.Medal` = html(as.character(icon_style(fontawesome("medal"), scale = 1.75, fill = col_medals["Silver"]))),
-             `Bronze.Medal` = html(as.character(icon_style(fontawesome("medal"), scale = 1.75, fill = col_medals["Bronze"])))) |> 
+  cols_label(
+    ranking = html("Ranking &#x2195;"), 
+    iso_a2 = "", 
+    country_code = html("Country \n code &#x2195;"), 
+    country_long = html("Country &#x2195;"),
+    `Gold.Medal` = html(as.character(icon_style(fontawesome("medal"), scale = 1.75, fill = col_medals["Gold"]))),
+    `Silver.Medal` = html(as.character(icon_style(fontawesome("medal"), scale = 1.75, fill = col_medals["Silver"]))),
+    `Bronze.Medal` = html(as.character(icon_style(fontawesome("medal"), scale = 1.75, fill = col_medals["Bronze"])))
+  ) |> 
   # general table formating
   gt::tab_options(column_labels.font.weight = "bold",
                   column_labels.padding.horizontal = px(10),
                   table.background.color = "transparent",
-                  table.font.color = "grey50",
-                  table.font.color.light = "black",
-                  table.width = pct(100)) |> 
+                  table.font.color = "grey50") |> 
   cols_align(align = "center", columns = !contains("Country")) |> 
+  # realtive column widths
+  cols_width(contains("ranking|flag") ~ pct(2),
+             contains("country_code") ~ pct(2),
+             contains("Medal|Total") ~ pct(5),
+             contains("country_code") ~ pct(5),
+             everything() ~ pct(70)) |> 
   # add interactivity
   opt_interactive(
     use_pagination = T, use_page_size_select = T, page_size_default = 10,
@@ -223,4 +252,7 @@ tab_nations |>
     use_search = T,
   )
 ```
+
+
+<!-- Athletes sent vs with a medal -->
 
