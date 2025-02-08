@@ -49,17 +49,17 @@ medalists_top[is.na(medalists_top)] <- 0
 disciplines <- unique(medalists_top$discipline)
 ```
 
+<!-- plot by gender as well? -->
 
 ```{r}
 #| label: figure-medalist-scatterpie
-#| out-width: "100%"
 
 ggplot() +
-  geom_scatterpie(data = medalists_top, aes(x = athlete_ID * 3, y = discipline_id * 2, group = name, r = N_total / 5),
+  geom_scatterpie(data = medalists_top, aes(x = athlete_ID * 3, y = discipline_id * 3, group = name, r = N_total / 4),
                   cols = c("Bronze", "Silver", "Gold")) + 
   scale_fill_manual(values = col_medals) +
   coord_equal() +
-  scale_y_continuous(breaks = seq(-2, length(top_disciplines) * -2, -2),
+  scale_y_continuous(breaks = seq(-3, length(top_disciplines) * -3, -3),
                      labels = rev(top_disciplines)) +
   theme_void() +
   theme(axis.text.y = element_text(face = "bold", hjust = 1),
@@ -74,20 +74,42 @@ ls_p_medalists <- list()
 
 for (i in top_disciplines) {
   input <- medalists_top |> 
-    filter(discipline == i)
+    filter(discipline == i) |> 
+    pivot_longer(cols = c("Gold", "Silver", "Bronze"), values_to = "Count", names_to = "Medal_type") |> 
+    # arrange by total number of medals
+    arrange(desc(N_total)) |> 
+    # as factor is for `facet_wrap` (https://stackoverflow.com/questions/15116081/controlling-order-of-facet-grid-facet-wrap-in-ggplot2)
+    mutate(across(label, ~factor(., levels = unique(label))))
   
-  p <- ggplot(data = input, aes(x = N_of_type, fill = medal_type, width = N_total)) +
-    geom_bar() +
-    scale_fill_manual(values = col_medals) +
-    facet_wrap(~label, scales = "free", ncol = 6) +
-    coord_polar(theta = "x") +
-    labs(title = i) +
-    theme_void() +
-    theme(plot.title = element_text(hjust = 0.5),
-          aspect.ratio = 1,
+  # p <- ggplot(data = input, aes(x = "", y = Count, fill = Medal_type)) +
+  #   geom_bar(stat = "identity", width = 1) +
+  #   scale_fill_manual(values = col_medals) +
+  #   facet_wrap(~label, scales = "free", ncol = 6) +
+  #   coord_polar(theta = "y", start = 0) +
+  #   labs(title = i) +
+  #   theme_void() +
+  #   theme(plot.title = element_text(hjust = 0.5),
+  #         aspect.ratio = 1,
+  #         legend.position = "none")
+  
+  # recover details about individual medals
+  p <- medalists_dat |> 
+    filter(discipline == i, name %in% input$name) |> 
+    left_join(select(input, name, label), by = "name") |> 
+    mutate(medal_date = lubridate::ymd(medal_date),
+           # this is to have dates on x-axis matching with "medal data points"
+           medal_date_label = factor(format(medal_date, "%b %d"))) |> 
+    ggplot(aes(x = medal_date_label, y = event)) +
+    geom_point(aes(colour = medal_type), size = 1) +
+    scale_colour_manual(values = col_medals) +
+    facet_wrap(~label, scales = "free", ncol = 5) +
+    theme_minimal() +
+    theme(axis.title = element_blank(),
+          axis.text.x = element_text(angle = 90, hjust = 0.5, vjust = 0.5),
+          aspect.ratio = 0.65,
           legend.position = "none")
   
-ls_p_medalists[[i]] <- p
+  ls_p_medalists[[i]] <- p
 }
 
 ```
