@@ -9,6 +9,7 @@
 .RData
 *.RData
 .RDataTmp
+*.Rdata
 
 # User-specific files
 .Ruserdata
@@ -156,5 +157,7 @@ _bookdown_files/
 # Quarto
 /.quarto/
 /_site/
-.quarto/
 _site/
+
+# Various outputs
+*.png
