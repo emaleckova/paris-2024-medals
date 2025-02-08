@@ -254,5 +254,5 @@ tab_nations |>
 ```
 
 
-<!-- Athletes sent vs with a medal -->
+<!-- Athletes sent vs with a medal - bar chart sorted by "success" percentage?-->
 
