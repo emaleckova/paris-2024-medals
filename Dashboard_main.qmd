@@ -49,6 +49,9 @@ library(gganimate)
 ### Medal colours
 col_medals <- c("#FCC65B", "#E5E5E5", "#E0BD95")
 names(col_medals) <- c("Gold", "Silver", "Bronze")
+
+### Gender colours
+col_genders <- c("cornflowerblue", "coral1")
 ```
 
 
@@ -103,7 +106,7 @@ n_awards <- sum(schedule_dat$event_medal)
 
 bslib::value_box(
   title = tags$h3("Medal ceremonies", style = "cont-size: 20px;"),
-  #theme = "dash_gold",
+  theme = "dash_gold",
   showcase = bs_icon("award-fill"),
   value = tags$p(n_awards, style = "font-size: 42px; font-face: bold;")
 )
@@ -114,7 +117,7 @@ bslib::value_box(
 
 bslib::value_box(
   title = tags$h3("Registered NOCs", style = "cont-size: 20px;"),
-  #theme = "dash_gold",
+  #heme = "dash_gold",
   showcase = bs_icon("globe2"),
   value = tags$p(n_noc_all, style = "font-size: 42px; font-face: bold;")
 )
@@ -125,7 +128,7 @@ bslib::value_box(
 
 bslib::value_box(
   title = tags$h3("Qualified NOCs", style = "cont-size: 20px;"),
-  #theme = "dash_gold",
+  theme = "dash_gold",
   showcase = bs_icon("check2-all"),
   value = tags$p(n_noc_qualified, style = "font-size: 42px; font-face: bold;")
 )
@@ -136,7 +139,7 @@ bslib::value_box(
 
 bslib::value_box(
   title = tags$h3("NOCs with medalists", style = "cont-size: 20px;"),
-  #theme = "dash_gold",
+  theme = "dash_gold",
   showcase = bs_icon("award"),
   value = tags$p(n_noc_medals, style = "font-size: 42px; font-face: bold;")
 )
@@ -164,7 +167,7 @@ n_women <- athletes_dat |>
 
 bslib::value_box(
   title = tags$h3("Male athletes", style = "cont-size: 20px;"),
-  #theme = "dash_gold",
+  theme = col_genders[1],
   showcase = bs_icon("gender-male"),
   value = tags$p(n_men, style = "font-size: 42px; font-face: bold;")
 )
@@ -175,7 +178,7 @@ bslib::value_box(
 
 bslib::value_box(
   title = tags$h3("Female athletes", style = "cont-size: 20px;"),
-  #theme = "dash_gold",
+  theme = col_genders[2],
   showcase = bs_icon("gender-female"),
   value = tags$p(n_women, style = "font-size: 42px; font-face: bold;")
 )
@@ -183,8 +186,6 @@ bslib::value_box(
 
 
 ## ROW: Historical female participation
-
-<!-- {gganimate} for male vs female in history? -->
 
 ```{r}
 #| label: get-female-participation-data
@@ -196,20 +197,27 @@ remove(female_tbls)
 ```{r}
 #| label: figure-historical-female-participation
 
-p <- ggplot(female_dat, aes(x = Year, y = Prcnt_women_participants)) +
-  geom_point(aes(size = Prcnt_women_participants)) +
-  labs(title = "Participants by gender") +
+# n of frames ~ n of years with data
+n_frames = length(unique(female_dat$Year))
+
+# long format for plotting
+p_genders <- female_dat |> 
+  pivot_longer(cols = c("Prcnt_women_participants", "Prcnt_men_participants"), values_to = "Prcnt", names_to = "Gender") |> 
+  ggplot(aes(x = Year, y = Prcnt, group = Gender)) +
+  geom_line(aes(colour = Gender), linewidth = 1) +
+  scale_colour_manual(values = col_genders) +
+  scale_x_continuous(expand = c(0, 0),
+                     breaks = unique(female_dat$Year)) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, hjust = 0.5, vjust = 0.5),
         axis.title = element_blank(),
+        aspect.ratio = 0.5,
         legend.position = "none")
 
-anim <- p +
-  transition_states(Year,
-                    transition_length = 2,
-                    state_length = 1)
+anim_genders <- p_genders +
+  transition_reveal(along = Year)
 
-anim
+animate(anim_genders, nframes = n_frames, duration = 7)
 ```
 
 
