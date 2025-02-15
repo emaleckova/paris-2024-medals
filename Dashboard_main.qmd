@@ -33,10 +33,11 @@ library(icons)
 # tables
 library(gt)
 library(tabulapdf) # from pdf
-# maps
+# maps + country codes
 library(rnaturalearth)
 library(sf)
 library(cartogram)
+library(countrycode)
 # plots
 library(ggiraph)
 library(scatterpie)
