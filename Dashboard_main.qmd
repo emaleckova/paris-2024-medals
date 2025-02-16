@@ -82,6 +82,8 @@ schedule_dat <- read.delim("data/schedules.csv", sep = ",", header = T)
 
 ## ROW: NOC value boxes
 
+:::{.card}
+
 ```{r}
 #| label: overview-stats
 
@@ -147,6 +149,8 @@ bslib::value_box(
 )
 ```
 
+:::
+
 ## ROW: Athletes by gender
 ```{r}
 #| label: get-athletes-by-gender
@@ -163,6 +167,10 @@ n_women <- athletes_dat |>
   distinct() |> 
   nrow()
 ```
+
+### COL: Csrd for genders
+
+:::{.card}
 
 ```{r}
 #| context: valuebox-male-athletes
@@ -186,8 +194,9 @@ bslib::value_box(
 )
 ```
 
+:::
 
-## ROW: Historical female participation
+### COL: Plot - both genders
 
 ```{r}
 #| label: get-female-participation-data
@@ -202,7 +211,7 @@ remove(female_tbls)
 # n of frames ~ n of years with data
 n_frames = length(unique(female_dat$Year))
 
-gender_plot_title <- paste0("**Participations of <span style='color:", col_genders[1], "'>male</span> and ", "<span style='color:", col_genders[2], "'>female</span> athletes in Summer Olympics: 1900-2024**")
+gender_plot_title <- paste0("**<span style='color:", col_genders[1], "'>Male</span> and ", "<span style='color:", col_genders[2], "'>female</span> athletes in Summer Olympics: 1900-2024**")
 
 # long format for plotting
 p_genders <- female_dat |> 
@@ -226,7 +235,6 @@ anim_genders <- p_genders +
 
 animate(anim_genders, nframes = n_frames, duration = 7)
 ```
-
 
 ## ROW: Facts about the Games
 
