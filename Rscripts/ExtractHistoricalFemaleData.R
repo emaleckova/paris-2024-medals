@@ -19,4 +19,9 @@ colnames(female_dat)[3:9] <- c(
   )
 
 # define numerical columns
-female_dat[, 2:9] <- lapply(female_dat[, 2:9], as.numeric)
+female_dat[, c(1, 3:9)] <- lapply(female_dat[, c(1, 3:9)], as.numeric)
+# make percentage fraction (-> use of percentage scale in the plot)
+female_dat$Prcnt_women_participants <- female_dat$Prcnt_women_participants/100
+
+# percentage of men can be calculated now
+female_dat$Prcnt_men_participants <- 1 - female_dat$Prcnt_women_participants
