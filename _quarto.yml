@@ -1,4 +1,5 @@
 project:
+  title: "Dashboard_main"
   type: website
 
 website:
@@ -10,8 +11,18 @@ website:
 
 format:
   html:
-    theme: [vapor, custom.scss]
-    highlight-style: atom-one-dark
+    main-font: gowun-dodum
+    theme:
+      - pulse
+      - custom.scss
+    #highlight-style: atom-one-dark
+    css: 
+      - visuals/css/gowun-dodum.css
     toc: true
     grid:
       sidebar-width: 150px
+
+embed-resources: false
+
+filters:
+  - shinylive
