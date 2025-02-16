@@ -253,6 +253,7 @@ tab_nations |>
   )
 ```
 
+<!-- gganimate for daily development in time ?-->
 
 <!-- Athletes sent vs with a medal - bar chart sorted by "success" percentage?-->
 

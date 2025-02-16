@@ -1,12 +1,10 @@
 ---
 title: "Paris 2024 Medals"
 
-
 format:
   dashboard:
     logo: images/Paris2024_Mono_Blanc.png
     orientation: rows
-embed-resources: true
 
 execute:
   echo: false
@@ -19,8 +17,7 @@ execute:
 # About
 
 ```{r}
-#| context: setup
-#| label: r-session
+#| label: r-session-setup
 
 # data wrangling
 library(tidyverse)
@@ -42,6 +39,10 @@ library(countrycode)
 library(ggiraph)
 library(scatterpie)
 library(gganimate)
+library(ggtext)
+library(scales)
+# shiny
+library(shiny)
 ```
 
 ```{r}
@@ -52,7 +53,7 @@ col_medals <- c("#FCC65B", "#E5E5E5", "#E0BD95")
 names(col_medals) <- c("Gold", "Silver", "Bronze")
 
 ### Gender colours
-col_genders <- c("cornflowerblue", "coral1")
+col_genders <- c("#304BBC", "#A53771")
 ```
 
 
@@ -201,16 +202,21 @@ remove(female_tbls)
 # n of frames ~ n of years with data
 n_frames = length(unique(female_dat$Year))
 
+gender_plot_title <- paste0("**Participations of <span style='color:", col_genders[1], "'>male</span> and ", "<span style='color:", col_genders[2], "'>female</span> athletes in Summer Olympics: 1900-2024**")
+
 # long format for plotting
 p_genders <- female_dat |> 
   pivot_longer(cols = c("Prcnt_women_participants", "Prcnt_men_participants"), values_to = "Prcnt", names_to = "Gender") |> 
   ggplot(aes(x = Year, y = Prcnt, group = Gender)) +
-  geom_line(aes(colour = Gender), linewidth = 1) +
+  geom_line(aes(colour = Gender), linewidth = 1.25) +
   scale_colour_manual(values = col_genders) +
   scale_x_continuous(expand = c(0, 0),
                      breaks = unique(female_dat$Year)) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(title = gender_plot_title) +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 0.5, vjust = 0.5),
+  theme(plot.title = element_markdown(hjust = 0.5),
+        axis.text.x = element_text(angle = 90, hjust = 0.5, vjust = 0.5),
         axis.title = element_blank(),
         aspect.ratio = 0.5,
         legend.position = "none")
@@ -233,7 +239,7 @@ These are some impressive numbers about the 32^nd^ Summer olympics held in Paris
 
 {{< include _TopNations.qmd >}}
 
-# Top medallists {orientation="rowss"}
+# Top medallists {orientation="rows"}
 
 {{< include _TopMedallists.qmd >}}
 

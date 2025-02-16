@@ -1,3 +1,8 @@
+---
+resources:
+  - data/medallists.csv
+---
+
 ## ROW: Disciplines with mutli-medalists 
 
 <!-- There are only 17 disciplines where one athlete won at least two medals. This section will focus on them. -->
@@ -80,17 +85,6 @@ for (i in top_disciplines) {
     arrange(desc(N_total)) |> 
     # as factor is for `facet_wrap` (https://stackoverflow.com/questions/15116081/controlling-order-of-facet-grid-facet-wrap-in-ggplot2)
     mutate(across(name_label, ~factor(., levels = unique(name_label))))
-  
-  # p <- ggplot(data = input, aes(x = "", y = Count, fill = Medal_type)) +
-  #   geom_bar(stat = "identity", width = 1) +
-  #   scale_fill_manual(values = col_medals) +
-  #   facet_wrap(~label, scales = "free", ncol = 6) +
-  #   coord_polar(theta = "y", start = 0) +
-  #   labs(title = i) +
-  #   theme_void() +
-  #   theme(plot.title = element_text(hjust = 0.5),
-  #         aspect.ratio = 1,
-  #         legend.position = "none")
   
   # recover details about individual medals
   p <- medalists_dat |> 
@@ -180,35 +174,76 @@ for (i in top_disciplines) {
 
 ### COL: Explore top medalists by sport (interactive)
 
-<!-- This is an intercative addition to the summary plot created above. User can select discipline and can then explore athletes. -->
-```{r}
-#| label: medalists-for-ojs
+```{shinylive-r}
+#| standalone: true
 
-ojs_define(medalists_top_ojs = medalists_top)
-```
+library(dplyr)
+library(lubridate)
+library(countrycode)
+library(ggplot2)
+library(ggtext)
+library(gt)
 
+# Unfortunately, {shinylive-r} chunks do not have access to data loaded and preprocessed within pure {r} chunks.
+# Therefore load raw data from URL (!!!) and preprocess it for plotting again.
 
-```{ojs}
-medalists = transpose(medalists_top_ojs)
+medalists_dat <- read.delim("https://www.kaggle.com/datasets/piterfm/paris-2024-olympic-summer-games/medallists.csv", sep = ",", header = T)
 
-viewof disciplineDropdown = Inputs.select(
-  medalists_top_ojs.map(d => d.discipline),
-  {
-    label: "Choose a discipline",
-    unique: true
-}
+medalists_summarized <- medalists_dat |> 
+  # keep only medal events
+  filter(is_medallist == "True") |> 
+  # medals by athlete
+  group_by(name, country, country_code, gender, discipline, medal_type) |> 
+  summarise(N_of_type = n()) |> 
+  group_by(name, country, discipline) |> 
+  mutate(N_total = sum(N_of_type)) |> 
+  ungroup() |> 
+  pivot_wider(id_cols = c(1:5, "N_total"), names_from = "medal_type", values_from = "N_of_type")
+
+medalists_top <- medalists_summarized |> 
+  filter(N_total > 1) |> 
+  group_by(discipline) |> 
+  slice_max(N_total, n = 3, with_ties = T) |> 
+  # create a label for plots
+  mutate(name_label = paste(name, "\n", N_total, "medals")) |> 
+  # athelte helper IDs - sorted by total number of medals
+  group_by(discipline, name) |> 
+  arrange(desc(N_total)) |> 
+  # discipline_IDs
+  group_by(discipline) |> 
+  mutate(discipline_id = cur_group_id() * -1) |> 
+  # athlete IDs
+  group_by(discipline_id) |> 
+  mutate(athlete_ID = 1:n())
+
+# replace NAs with zero for smooth plotting
+medalists_top[is.na(medalists_top)] <- 0
+
+# extract discipline names -> axis labels
+disciplines <- unique(medalists_top$discipline)
+
+# Define UI for the Shiny app
+ui <- fluidPage(
+  titlePanel("Top Medalists by Discipline"),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("discipline", "Choose a discipline:", choices = disciplines)
+    )
+    mainPanel(
+      textOutput("selected_discipline")
+    )
+  )
 )
+
+# Define server logic for the Shiny app
+server <- function(input, output) {
+  output$selected_discipline <- renderText({
+    paste("You have selected:", input$discipline)
+  })
+}
+
+# Run the Shiny app
+shinyApp(ui = ui)
 ```
 
-
-
-<!-- backup code -->
-
-```{r}
-# Spots with at least two meadls per athlete
-unique(medalists_top[medalists_top$N_total > 1, ]$discipline)
-
-# such athletes
-unique(medalists_top[medalists_top$N_total > 1, ]$name)
-```
 
