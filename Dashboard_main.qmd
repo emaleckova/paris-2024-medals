@@ -1,6 +1,4 @@
 ---
-title: "Paris 2024 Medals"
-
 format:
   dashboard:
     logo: images/Paris2024_Mono_Blanc.png
@@ -14,7 +12,7 @@ execute:
 
 <!-- H1 = PAGE -->
 
-# About
+# Olympics in numbers
 
 ```{r}
 #| label: r-session-setup
@@ -41,8 +39,6 @@ library(scatterpie)
 library(gganimate)
 library(ggtext)
 library(scales)
-# shiny
-library(shiny)
 ```
 
 ```{r}
@@ -54,6 +50,9 @@ names(col_medals) <- c("Gold", "Silver", "Bronze")
 
 ### Gender colours
 col_genders <- c("#304BBC", "#A53771")
+
+### Paris 2024 colours
+col_paris <- c("#f292b7", "#d6be76", "#1d87c2", "#002e54", "#a499c3")
 ```
 
 
@@ -168,7 +167,7 @@ n_women <- athletes_dat |>
   nrow()
 ```
 
-### COL: Csrd for genders
+### COL: Card for genders
 
 :::{.card}
 
@@ -177,7 +176,7 @@ n_women <- athletes_dat |>
 
 bslib::value_box(
   title = tags$h3("Male athletes", style = "cont-size: 20px;"),
-  theme = col_genders[1],
+  theme = col_paris[1],
   showcase = bs_icon("gender-male"),
   value = tags$p(n_men, style = "font-size: 42px; font-face: bold;")
 )
@@ -188,7 +187,7 @@ bslib::value_box(
 
 bslib::value_box(
   title = tags$h3("Female athletes", style = "cont-size: 20px;"),
-  theme = col_genders[2],
+  theme = col_paris[3],
   showcase = bs_icon("gender-female"),
   value = tags$p(n_women, style = "font-size: 42px; font-face: bold;")
 )
@@ -211,14 +210,14 @@ remove(female_tbls)
 # n of frames ~ n of years with data
 n_frames = length(unique(female_dat$Year))
 
-gender_plot_title <- paste0("**<span style='color:", col_genders[1], "'>Male</span> and ", "<span style='color:", col_genders[2], "'>female</span> athletes in Summer Olympics: 1900-2024**")
+gender_plot_title <- paste0("**<span style='color:", col_paris[3], "'>Male</span> and ", "<span style='color:", col_paris[1], "'>female</span> athletes in Summer Olympics: 1900-2024**")
 
 # long format for plotting
 p_genders <- female_dat |> 
   pivot_longer(cols = c("Prcnt_women_participants", "Prcnt_men_participants"), values_to = "Prcnt", names_to = "Gender") |> 
   ggplot(aes(x = Year, y = Prcnt, group = Gender)) +
   geom_line(aes(colour = Gender), linewidth = 1.25) +
-  scale_colour_manual(values = col_genders) +
+  scale_colour_manual(values = c("Prcnt_men_participants" = col_paris[3], "Prcnt_women_participants" = col_paris[1])) +
   scale_x_continuous(expand = c(0, 0),
                      breaks = unique(female_dat$Year)) +
   scale_y_continuous(labels = scales::percent_format()) +
@@ -245,9 +244,9 @@ These are some impressive numbers about the 32^nd^ Summer olympics held in Paris
 
 # Participating nations {orientation="columns"}
 
-{{< include _TopNations.qmd >}}
+<!--{{< include _TopNations.qmd >}} -->
 
-# Top medallists {orientation="rows"}
+# Top medallists {orientation="columns"}
 
 {{< include _TopMedallists.qmd >}}
 
@@ -256,10 +255,7 @@ These are some impressive numbers about the 32^nd^ Summer olympics held in Paris
 
 # About
 
-----------------------------------------------------------------------------------
-
 **Motivation:**  
 
 I made this website to practice use of Quarto dashboards and deployment to public.
 
-----------------------------------------------------------------------------------

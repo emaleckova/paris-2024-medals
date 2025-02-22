@@ -240,11 +240,14 @@ tab_nations |>
                   table.font.color = "grey50") |> 
   cols_align(align = "center", columns = !contains("Country")) |> 
   # realtive column widths
-  cols_width(contains("ranking|flag") ~ pct(2),
-             contains("country_code") ~ pct(2),
-             contains("Medal|Total") ~ pct(5),
-             contains("country_code") ~ pct(5),
-             everything() ~ pct(70)) |> 
+  cols_width(
+    ranking ~ px(30),
+    iso_a2 ~ px(30),
+    country_code ~ px(50),
+    country_long ~ px(120),
+    contains("Medal") ~ px(30),
+    Total ~ px(30)
+  ) |>
   # add interactivity
   opt_interactive(
     use_pagination = T, use_page_size_select = T, page_size_default = 10,
