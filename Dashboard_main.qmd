@@ -3,6 +3,8 @@ format:
   dashboard:
     logo: images/Paris2024_Mono_Blanc.png
     orientation: rows
+    main-font: gowun-dodum
+    expandable: false
 
 execute:
   echo: false
@@ -79,10 +81,6 @@ medalists_dat$medal_type <- gsub(" Medal", "", medalists_dat$medal_type)
 schedule_dat <- read.delim("data/schedules.csv", sep = ",", header = T)
 ```
 
-## ROW: NOC value boxes
-
-:::{.card}
-
 ```{r}
 #| label: overview-stats
 
@@ -104,53 +102,61 @@ n_noc_medals <- length(unique(nations_dat$country_code))
 n_awards <- sum(schedule_dat$event_medal)
 ```
 
+## ROW: Subset of cards
+
+### COL : Card 1 {height="20%"}
 ```{r}
-#| context: valuebox-medal-competitions
+#| label: valuebox-medal-competitions
 
 bslib::value_box(
   title = tags$h3("Medal ceremonies", style = "cont-size: 20px;"),
-  theme = "dash_gold",
+  theme = "bg-theme-paris-dblue",
   showcase = bs_icon("award-fill"),
   value = tags$p(n_awards, style = "font-size: 42px; font-face: bold;")
 )
 ```
+
+### COL: Card 2 {height="20%"}
 
 ```{r}
 #| label: valuebox-all-nocs
 
 bslib::value_box(
   title = tags$h3("Registered NOCs", style = "cont-size: 20px;"),
-  #heme = "dash_gold",
+  theme = "bg-theme-paris-dblue",
   showcase = bs_icon("globe2"),
   value = tags$p(n_noc_all, style = "font-size: 42px; font-face: bold;")
 )
 ```
 
+### COL: Card 3 {height="20%"}
+
 ```{r}
-#| context: valuebox-nocs-qual
+#| label: valuebox-nocs-qual
 
 bslib::value_box(
   title = tags$h3("Qualified NOCs", style = "cont-size: 20px;"),
-  theme = "dash_gold",
+  theme = "bg-theme-paris-dblue",
   showcase = bs_icon("check2-all"),
   value = tags$p(n_noc_qualified, style = "font-size: 42px; font-face: bold;")
 )
 ```
 
+### COL: Card 4 {height="20%"}
+
 ```{r}
-#| context: valuebox-nocs-medals
+#| label: valuebox-nocs-medals
 
 bslib::value_box(
   title = tags$h3("NOCs with medalists", style = "cont-size: 20px;"),
-  theme = "dash_gold",
+  theme = "bg-theme-paris-dblue",
   showcase = bs_icon("award"),
   value = tags$p(n_noc_medals, style = "font-size: 42px; font-face: bold;")
 )
 ```
 
-:::
+## ROW: Genders
 
-## ROW: Athletes by gender
 ```{r}
 #| label: get-athletes-by-gender
 
@@ -167,35 +173,38 @@ n_women <- athletes_dat |>
   nrow()
 ```
 
-### COL: Card for genders
-
-:::{.card}
+### COL: Men's card {height="20%"}
 
 ```{r}
-#| context: valuebox-male-athletes
+#| label: valuebox-male-athletes
 
 bslib::value_box(
   title = tags$h3("Male athletes", style = "cont-size: 20px;"),
-  theme = col_paris[1],
+  theme = "bg-theme-paris-blue",
   showcase = bs_icon("gender-male"),
   value = tags$p(n_men, style = "font-size: 42px; font-face: bold;")
 )
 ```
 
+### COL: Women's card {height="20%"}
+
 ```{r}
-#| context: valuebox-female-athletes
+#| label: valuebox-female-athletes
 
 bslib::value_box(
   title = tags$h3("Female athletes", style = "cont-size: 20px;"),
-  theme = col_paris[3],
+  theme = "bg-theme-paris-pink",
   showcase = bs_icon("gender-female"),
   value = tags$p(n_women, style = "font-size: 42px; font-face: bold;")
 )
 ```
 
-:::
+### COL: Facts about the Games {height="50%"}
 
-### COL: Plot - both genders
+These are some impressive numbers about the 32^nd^ Summer olympics held in Paris from July 26 to August 11, 2024. The Paris Games were exceptional in many other aspects - let's explore a selection together. 
+
+
+## ROW: Plot genders in time {height="50%" width="50%"}
 
 ```{r}
 #| label: get-female-participation-data
@@ -235,16 +244,17 @@ anim_genders <- p_genders +
 animate(anim_genders, nframes = n_frames, duration = 7)
 ```
 
-## ROW: Facts about the Games
 
-These are some impressive numbers about the 32^nd^ Summer olympics held in Paris from July 26 to August 11, 2024. The Paris Games were exceptional in many other aspects - let's explore a selection together.    
+
+
+<!-- -------------------------------------------------------------------------- -->
 
 <!-- -------- -->
 <!-- New page -->
 
 # Participating nations {orientation="columns"}
 
-<!--{{< include _TopNations.qmd >}} -->
+{{< include _TopNations.qmd >}}
 
 # Top medallists {orientation="columns"}
 
