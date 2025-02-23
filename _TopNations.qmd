@@ -97,12 +97,13 @@ p_world <- ggplot() +
         legend.position = "none")
 
 girafe(ggobj = p_world,
-       width_svg = 50, height_svg = 40) |> 
+       width_svg = 100, height_svg = 100) |> 
   girafe_options(
     opts_tooltip(
       use_fill = FALSE,
       css = "color:black;"
-    )
+    ),
+    opts_sizing(rescale = TRUE)
   )
 ```
 
@@ -151,7 +152,7 @@ girafe(ggobj = p_eu,
 
 
 
-## COL: Nations by medals (table)
+## COL: Nations table (medals)
 
 ```{r}
 #| label: country-codes
@@ -241,12 +242,12 @@ tab_nations |>
   cols_align(align = "center", columns = !contains("Country")) |> 
   # realtive column widths
   cols_width(
-    ranking ~ px(30),
-    iso_a2 ~ px(30),
+    ranking ~ px(60),
+    iso_a2 ~ px(40),
     country_code ~ px(50),
-    country_long ~ px(120),
-    contains("Medal") ~ px(30),
-    Total ~ px(30)
+    country_long ~ px(150),
+    contains("Medal") ~ px(50),
+    Total ~ px(50)
   ) |>
   # add interactivity
   opt_interactive(

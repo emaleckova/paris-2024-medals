@@ -1,5 +1,4 @@
 project:
-  title: "Dashboard_main"
   type: website
 
 website:
@@ -11,14 +10,12 @@ website:
 
 format:
   html:
-    main-font: gowun-dodum
     theme:
       - pulse
       - visuals/custom.scss
     #highlight-style: atom-one-dark
     css: 
       - visuals/css/gowun-dodum.css
-    toc: true
     grid:
       sidebar-width: 150px
 
