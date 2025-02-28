@@ -29,18 +29,22 @@ library(bsicons)
 library(icons)
 # tables
 library(gt)
-library(tabulapdf) # from pdf
+#library(tabulapdf) # from pdf
 # maps + country codes
 library(rnaturalearth)
 library(sf)
 library(cartogram)
 library(countrycode)
+library(maps)
+library(geosphere)
+#library(tidygeocoder)
 # plots
 library(ggiraph)
 library(scatterpie)
 library(gganimate)
 library(ggtext)
 library(scales)
+library(ggarrow)
 ```
 
 ```{r}
@@ -79,6 +83,10 @@ medalists_dat$medal_type <- gsub(" Medal", "", medalists_dat$medal_type)
 
 ### Schedule
 schedule_dat <- read.delim("data/schedules.csv", sep = ",", header = T)
+
+### Preprocessed data
+load("data/female_historical.RData")
+load("data/torch_route_coordinates.RData")
 ```
 
 ```{r}
@@ -101,6 +109,18 @@ n_noc_medals <- length(unique(nations_dat$country_code))
 # Total of medal sets awarded
 n_awards <- sum(schedule_dat$event_medal)
 ```
+
+## ROW: Intro {height="20%"}
+
+::: {.div-intro style="font-size: 0.8em;"}
+The 33^rd^ Summer Olympic Games - or simply **Paris 2024** - came back to the capital of France after the 1900 and 1924 Games.
+
+Developments of the past century were reflected in the focus of the Games' organizers: gender equality and sustainability. The Paris Games also stood out with their Opening Ceremony - for the first time in modern Olympic history, it was held outside of a stadium. River Seine became the venue.
+
+Olympics are a global event, raising a lot of interest but also controversies. This dashboard celebrates sports achievments of the participants.
+:::
+
+<!-- And torch and venues???-->
 
 ## ROW: Subset of cards
 
@@ -180,7 +200,7 @@ n_women <- athletes_dat |>
 
 bslib::value_box(
   title = tags$h3("Male athletes", style = "cont-size: 20px;"),
-  theme = "bg-theme-paris-blue",
+  theme = "#000",
   showcase = bs_icon("gender-male"),
   value = tags$p(n_men, style = "font-size: 42px; font-face: bold;")
 )
@@ -201,17 +221,22 @@ bslib::value_box(
 
 ### COL: Facts about the Games {height="50%"}
 
-These are some impressive numbers about the 32^nd^ Summer olympics held in Paris from July 26 to August 11, 2024. The Paris Games were exceptional in many other aspects - let's explore a selection together. 
 
+
+- mascot
+Named Olympic Phryge, the Paris 2024 mascot is based on the traditional small Phrygian hats that the mascots are shaped after.
+
+Its name and design were chosen as symbols of freedom and to represent allegorical figures of the French Republic.
+
+
+The Paris Games were exceptional in many other aspects - let's explore a selection together. 
+
+- torch
+Carried by 10,000 people over thousands of miles, the torch, crafted from metal by steel giant Arcelor Mittal, resembles an oval iron pipe with a rounded center.
+
+Upon its arrival, the torch will have been carried to more than 400 locations, including France's overseas territories, until the opening of the event on July 26.
 
 ## ROW: Plot genders in time {height="50%" width="50%"}
-
-```{r}
-#| label: get-female-participation-data
-
-source("Rscripts/ExtractHistoricalFemaleData.R")
-remove(female_tbls)
-```
 
 ```{r}
 #| label: figure-historical-female-participation
@@ -244,9 +269,6 @@ anim_genders <- p_genders +
 animate(anim_genders, nframes = n_frames, duration = 7)
 ```
 
-
-
-
 <!-- -------------------------------------------------------------------------- -->
 
 <!-- -------- -->
@@ -261,6 +283,13 @@ animate(anim_genders, nframes = n_frames, duration = 7)
 {{< include _TopMedallists.qmd >}}
 
 
+# Coaches
+
+# Torch relay
+
+{{< include _TorchRoute.qmd >}} {orientation="columns"}
+
+
 <!-- IDEAS: Total men and women, disciplines with most events/medals? -->
 
 # About
@@ -269,3 +298,4 @@ animate(anim_genders, nframes = n_frames, duration = 7)
 
 I made this website to practice use of Quarto dashboards and deployment to public.
 
+<!-- elective RData/qs or pdfs??? -->
