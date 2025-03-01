@@ -246,25 +246,23 @@ filteredData = medalists.filter(d => d.discipline === disciplineDropdown)
 //filteredData
 ```
 
-### ROW: Plot (observable)
+### ROW: Observable plots
 
 ```{ojs}
 // plot for subset by discipline
 Plot.plot({
-  facet: {
-    data: filteredData,
-    x: "name_label",
-    header: {label: ""}
-    },
   marks: [
-    Plot.frame(),
     Plot.dot(filteredData, {
       x: "medal_date",
       y: 0.2,
+      fy: "name_label",
       fill: "medal_type",
       r: 5
     })
   ],
+  marginBottom: 60,
+  marginLeft: 200,
+  //aspectRatio: fixed ? 1 : undefined,
   
   symbol: {legend: false},
   
@@ -278,10 +276,9 @@ Plot.plot({
     tickRotate: -90,
   },
   y: {
+    label: "",
     axis: null
-  },
-  
-  header: {labelAngle: -90},
+  }
 })
 ```
 
