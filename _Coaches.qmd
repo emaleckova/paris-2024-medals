@@ -1,0 +1,138 @@
+```{r}
+# should filter out teams
+
+coaches <- athletes_dat |> 
+  filter(events != "['Men']", events != "['Women']") |> 
+  group_by(coach) |> 
+  summarise(n_athletes = length(unique(name))) |> 
+  arrange(desc(n_athletes))
+```
+
+```{r}
+top_coaches <- coaches |> 
+  filter(nchar(coach) > 1) |> 
+  top_n(n_athletes, n = 10)
+```
+
+```{r}
+# identify athletes of each of the coaches
+
+top_coaches_athletes <- athletes_dat |> 
+  filter(coach %in% top_coaches$coach) |> 
+  select(name, coach)
+
+top_coaches_names <- unique(top_coaches$coach)
+```
+
+```{r}
+library(network)
+library(igraph)
+
+
+coaches_graph = graph_from_edgelist(top_coaches_athletes)
+arcplot(top_coaches_athletes)
+
+
+
+data(flo)
+netflo = network(flo)
+netflo
+
+flo_edges = as.matrix(netflo, matrix.type = "edgelist")
+arcplot(flo_edges, las = 1)
+
+flo_names = get.vertex.attribute(netflo, "vertex.names")
+arcplot(flo_edges, las = 1, labels = flo_names)
+
+# numeric indices in 'flo_edges'
+temp = unique(as.vector(t(flo_edges)))
+temp
+
+flo_labels = attributes(flo_edges)$vnames[temp]
+arcplot(flo_edges, las = 1, labels = flo_labels)
+```
+
+
+```{r}
+# counter to increment "athlete nodes" -> ensures unique values in each "sub-network" (created by coach)
+i <- 1
+
+# all nodes will be collected here
+all_node_df <- setNames(data.frame(matrix(NA, 0, 3)), c("V1", "V2", "discipline"))
+
+# I am going for a lopp to keep track of disciplines
+for(cname in top_coaches_names){
+  coach_ntwk <- network(filter(top_coaches_athletes, coach == cname))
+  node_names <- get.vertex.attribute(coach_ntwk, "vertex.names")
+  
+  # coach's athletes
+  athletes <- node_names[node_names %in% athletes_dat$name]
+  # after subestting, nodes can be renamed -> display for the plot
+  # coach's name
+  coach <- node_names[!node_names %in% athletes]
+  # create edges
+  ntwk_edges <- as.matrix(coach_ntwk, matrix.type = "edgelist")
+  
+  # get discipline -> plot colouring
+  discipline <- unique(athletes_dat[athletes_dat$name %in% athletes, ]$discipline)
+  print(discipline)
+  # polish formatting/spelling
+  discipline <- str_sub(discipline, 3, nchar(discipline) - 2)
+  
+  # df collecting the results froma bove
+  node_df <- as.data.frame(ntwk_edges)
+  node_df$discipline <- discipline
+  # polish coach's name before adding it
+  # (remove everything what is not a name or country code, line breaks for two coaches)
+  cname <- gsub("National: ", "", cname)
+  cname <- gsub("Club: ", "", cname)
+  cname <- gsub("([^,]*,[^,]*),", "\\1\n", cname)
+  
+  node_df$V2 <- cname
+  
+  # increment node numbers
+  node_df$V1 <- node_df$V1 + i * 100
+  
+  all_node_df <- rbind.data.frame(all_node_df, node_df)
+  
+  i <- i + 1
+}
+
+all_disciplines <- all_node_df$discipline
+unique_disciplines <- unique(all_disciplines)
+col_disciplines <- col_paris[c(1:3, 5)]
+
+# node colour by discipline
+col_all_disciplines <- col_disciplines[match(all_disciplines, unique_disciplines)]
+
+# big network here
+all_node_df$V1 <- as.character(all_node_df$V1)
+big_ntwk <- network(all_node_df[, 1:2])
+
+# credits: https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=43505bf5e85c47fe108a7ae84ee0bdc45246bf3c
+big_edges <- as.matrix(big_ntwk, matrix.type = "edgelist")
+temp <- unique(as.vector(t(big_edges)))
+new_labels <- attributes(big_edges)$vnames[temp]
+new_labels <- ifelse(nchar(new_labels) > 6, new_labels, "")
+
+# node sizes - coach should be bigger
+node_sizes <- ifelse(nchar(new_labels) > 6, 1.2, 0.6)
+
+node_x_positions <- which(nchar(new_labels) > 6)  # Assumes equal spacing
+node_y_position <- -0.5  # Adjust the vertical position of labels
+
+### Plot
+arcplot(big_edges, col.nodes = col_all_disciplines, col.arcs = col_paris[4], col.labels = col_paris[4],
+        cex.nodes = node_sizes, sorted = F, cex.labels = 0.5, las = 2, labels = new_labels)
+
+# include legend for the disciplines ~ node colour
+legend("topright", bty = "n",
+       legend = unique(all_disciplines),
+       col = unique(col_all_disciplines),
+       pch = 20,
+       pt.cex = 1.15,
+       cex = 0.85,
+       title = "Disciplines")
+```
+
+
