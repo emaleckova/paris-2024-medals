@@ -44,7 +44,10 @@ library(scatterpie)
 library(gganimate)
 library(ggtext)
 library(scales)
-library(ggarrow)
+library(arcdiagram)
+# arc graph
+library(network)
+library(igraph)
 ```
 
 ```{r}
