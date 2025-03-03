@@ -169,6 +169,7 @@ ccodes <- tmp[["_data"]][["country_code_2"]]
 remove(tmp)
 ```
 
+<!-- Total counts? I.e, team of four contirbutes four medals even if it was a single medal ceremony.  -->
 
 ```{r}
 #| label: table-nations-ranking
@@ -253,6 +254,9 @@ tab_nations |>
 ### ROW: Development in time (gganimate)
 <!-- Aim: gganimate for daily development in medal counts for top ten nations -->
 
+{.tabset}
+
+#### Top 10 nations
 ```{r}
 # which are top ten nations?
 top_nations <- nations_dat[1:10, ]$country
@@ -265,19 +269,23 @@ col_countries <- c(
 )
 names(col_countries) <- sort(top_nations)
 
-# prepare daily counts data
-# daily_medals_type <- medalists_dat |> 
-#   filter(country %in% top_nations) |> 
-#   group_by(country, medal_date, medal_type) |> 
-#   summarize(n_medals = n())
-
+# cumulative sums per nation
 daily_medals_totals <- medalists_dat |> 
   filter(country %in% top_nations) |> 
+  # input are data for individual atheletes & team medals must thus be kept only once
+  select(country, medal_date, event) |> 
+  distinct() |> 
   group_by(country, medal_date) |> 
-  summarise(daily_medals = n()) |> 
-  group_by(country) |>  
-  mutate(cumsum_medals = cumsum(daily_medals),
-         medal_date = as.Date(medal_date))
+  summarise(daily_medals = n(), .groups = "drop") |> 
+  mutate(medal_date = as.Date(medal_date)) |> 
+  # fill any missing data -> line for all countries, even for initial zero counts
+  complete(medal_date = seq(first_day, last_day, by = "1 day"),
+           country = unique(country),
+           fill = list(daily_medals = 0)) |> 
+  arrange(medal_date) |> 
+  group_by(country) |> 
+  mutate(cumsum_medals = cumsum(daily_medals)) |> 
+  ungroup()
 
 # the last row for each state is the total -> annotation placement
 medal_sums <- daily_medals_totals |> 
@@ -288,7 +296,7 @@ medal_sums <- daily_medals_totals |>
 first_day <- as.Date(min(daily_medals_totals$medal_date))
 last_day <- as.Date(max(daily_medals_totals$medal_date))
 
-# plot
+# plot; credits: https://github.com/z3tt/TidyTuesday/blob/main/R/2020_52_BigMacIndex.Rmd
 p_cum_medals <- ggplot(daily_medals_totals, aes(x = medal_date, y = cumsum_medals, group = country, colour = country)) +
   geom_line(linewidth = 1) +
   geom_text_repel(
@@ -307,7 +315,7 @@ p_cum_medals <- ggplot(daily_medals_totals, aes(x = medal_date, y = cumsum_medal
   ) +
   scale_x_date(breaks = seq(first_day, last_day, 1), date_labels = "%m-%d",
                expand = c(0, 0), limits = as.Date(c(first_day, "2024-08-14"))) +
-  scale_y_continuous(expand = c(0, 0), limits = c(0, 333)) +
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 105)) +
   scale_colour_manual(values = col_countries) +
   labs(
     x = "",
@@ -330,5 +338,120 @@ animate(anim_cum_medals, nframes = 25, duration = 25, end_pause = 10)
 ```
 
 
+#### Czech Republic
+
+```{r}
+# get cumulative sums
+daily_medals_cze <- medalists_dat |> 
+  filter(country == "Czechia") |> 
+  select(country, medal_date, event) |> 
+  # team medals should be kept only once
+  distinct() |> 
+  group_by(country, medal_date) |> 
+  summarise(daily_medals = n(), .groups = "drop") |> 
+  mutate(medal_date = as.Date(medal_date)) |> 
+  complete(medal_date = seq(first_day, last_day, by = "1 day"),
+           country = "Czechia",
+           fill = list(daily_medals = 0)) |> 
+  arrange(medal_date) |> 
+  mutate(cumsum_medals = cumsum(daily_medals))
+
+# collect medal events
+events_cze <- medalists_dat |> 
+  filter(country == "Czechia") |> 
+  select(medal_date, discipline, event) |> 
+  # team medals should be kept only once
+  distinct()
+
+# plot; credits: https://github.com/z3tt/TidyTuesday/blob/main/R/2020_52_BigMacIndex.Rmd
+p_cum_medals_cze <- ggplot(daily_medals_cze, aes(x = medal_date, y = cumsum_medals, group = country)) +
+  geom_line(linewidth = 1, colour = col_paris[4]) +
+  scale_x_date(breaks = seq(first_day, last_day, 1), date_labels = "%m-%d",
+               expand = c(0, 0), limits = as.Date(c(first_day, "2024-08-14"))) +
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 6), breaks = seq(0, 6, 2)) +
+  scale_colour_manual(values = col_countries) +
+  labs(
+    x = "",
+    y = "cumulative count"
+  ) +
+  theme_classic() +
+  theme(
+    panel.background = element_blank(),
+    panel.grid = element_blank(),
+    axis.text.x = element_text(angle = 90, vjust = 0.5),
+    legend.position = "none",
+    aspect.ratio = 0.65
+  )
+
+# animate it!
+anim_cum_medals_cze <- p_cum_medals_cze +
+  transition_reveal(along = medal_date)
+
+animate(anim_cum_medals_cze, nframes = 25, duration = 25, end_pause = 10)
+```
+
+
 <!-- Birth country vs nationality: sankey? -->
+```{r}
+athletes_nat <- athletes_dat |> 
+  select(birth_country, nationality)
+
+library(ggalluvial)
+library(RColorBrewer)
+
+athletes_nat |> 
+  filter(nchar(birth_country) > 0, birth_country != nationality) |> 
+  # Freq are counts for each known combination
+  group_by(birth_country, nationality) |> 
+  summarise(Freq = n()) |> 
+  ggplot(
+    aes(y = Freq,
+    axis1 = birth_country, axis2 = nationality)) +
+  geom_alluvium()
+
+# only flows with more than a single observation will be coloured somehow
+athlete_transfers <- athletes_nat |> 
+  filter(nchar(birth_country) > 0, birth_country != nationality) |> 
+  # Freq are counts for each known combination
+  group_by(birth_country, nationality) |> 
+  summarise(Freq = n()) |> 
+  ungroup() |> 
+  mutate(group = case_when(
+    Freq < 2 ~ "rare",
+    Freq > 1 & Freq < 6 ~ "minor",
+    TRUE ~ paste(birth_country, nationality, sep = " -> ")
+  )) |> 
+  # sorts the data by Freq
+  arrange(desc(Freq)) |> 
+  mutate(
+    birth_country = factor(birth_country, levels = unique(birth_country)),
+    nationality = factor(nationality, levels = unique(nationality))
+  )
+
+# Add more colors to this palette :
+col_transfers <- c(colorRampPalette(col_paris[c(3, 1, 2)])(20), "grey30", "grey80")
+names(col_transfers) <- unique(athlete_transfers$group)
+
+ggplot(athlete_transfers, aes(y = Freq, axis1 = birth_country, axis2 = nationality, fill = group)) +
+  geom_alluvium() + 
+  scale_fill_manual(values = col_transfers) +
+  geom_text_repel(
+    data = filter(athlete_transfers, group != "rare", group != "minor"),
+    aes(x = 2.2, label = group),
+    size = 1.5,
+    direction = "y",
+    xlim = c(2.2, NA),
+    hjust = 0,
+    segment.size = 0.75,
+    segment.linetype = "dotted",
+    box.padding = .4,
+    segment.curvature = -0.1,
+    segment.ncp = 3,
+    segment.angle = 20,
+    max.overlaps = 30
+  ) +
+  scale_x_continuous(expand = c(0, 0), limits = c(0.6, 3)) +
+  #theme_void() +
+  theme(legend.position = "none")
+```
 
