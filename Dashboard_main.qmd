@@ -37,17 +37,17 @@ library(cartogram)
 library(countrycode)
 library(maps)
 library(geosphere)
-#library(tidygeocoder)
+#library(tidygeocoder) # get geographical coordinates for countries/places/addresses
 # plots
 library(ggiraph)
 library(scatterpie)
 library(gganimate)
+library(ggrepel)
 library(ggtext)
 library(scales)
 library(arcdiagram)
 # arc graph
-library(network)
-library(igraph)
+library(ggraph)
 ```
 
 ```{r}
@@ -184,13 +184,13 @@ bslib::value_box(
 #| label: get-athletes-by-gender
 
 n_men <- athletes_dat |> 
-  filter(gender == "Male" & function. == "Athlete") |> 
+  filter(gender == "Male") |> 
   select(country, name, disciplines) |> 
   distinct() |> 
   nrow()
 
 n_women <- athletes_dat |> 
-  filter(gender == "Female" & function. == "Athlete") |> 
+  filter(gender == "Female") |> 
   select(country, name, disciplines) |> 
   distinct() |> 
   nrow()
@@ -269,8 +269,30 @@ p_genders <- female_dat |>
 anim_genders <- p_genders +
   transition_reveal(along = Year)
 
-animate(anim_genders, nframes = n_frames, duration = 7)
+animate(anim_genders, nframes = n_frames, duration = 14, end_pause = 7)
 ```
+
+<!-- Try removing team sports from the athlete counts by gender. -->
+```{r}
+#| eval: false
+
+teams_dat <- read.delim("data/teams.csv", sep = ",", header = T)
+
+library(splitstackshape)
+
+teams_dat <- cSplit(teams_dat, splitCols = "athletes", sep = ",", direction = "long")
+
+teams_by_gender <- teams_dat |> 
+  group_by(team_gender) |> 
+  summarize(n_athletes = n())
+
+n_men
+n_women
+
+n_men - teams_by_gender[teams_by_gender$team_gender == "M", ]$n_athletes
+n_women - teams_by_gender[teams_by_gender$team_gender == "W", ]$n_athletes
+```
+
 
 <!-- -------------------------------------------------------------------------- -->
 
@@ -288,9 +310,9 @@ animate(anim_genders, nframes = n_frames, duration = 7)
 
 # Coaches
 
-# Torch relay
+# Torch relay {orientation="columns"}
 
-{{< include _TorchRoute.qmd >}} {orientation="columns"}
+{{< include _TorchRoute.qmd >}}
 
 
 <!-- IDEAS: Total men and women, disciplines with most events/medals? -->
@@ -299,6 +321,8 @@ animate(anim_genders, nframes = n_frames, duration = 7)
 
 **Motivation:**  
 
-I made this website to practice use of Quarto dashboards and deployment to public.
+I made this website to practice use of Quarto dashboards and its deployment to public. I aimed to use packages and visualizations I have not used so far for work.
+
+## Acknowledgments
 
 <!-- elective RData/qs or pdfs??? -->
