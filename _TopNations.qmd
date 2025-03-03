@@ -67,7 +67,6 @@ map_teams_eu_grouped <- map_teams_eu_grouped |>
 
 ```{r}
 #| label: figure-participants-eu-grouped
-#| out-width: "100%"
 
 dorl <- cartogram_dorling(
   map_teams_eu_grouped, weight = "n_participants",
@@ -83,7 +82,7 @@ p_world <- ggplot() +
   # World basemap
   geom_sf(
     filter(world, admin != "Antarctica"), mapping = aes(geometry = geometry),
-    fill = "grey80", colour = "white") +
+    fill = col_paris[2], colour = "white", alpha = 0.8) +
   # team sizes
   geom_sf_interactive(
     dorl, mapping = aes(geometry = geometry, fill = continent,
@@ -97,7 +96,7 @@ p_world <- ggplot() +
         legend.position = "none")
 
 girafe(ggobj = p_world,
-       width_svg = 100, height_svg = 100) |> 
+       width_svg = 200, height_svg = 200) |> 
   girafe_options(
     opts_tooltip(
       use_fill = FALSE,
@@ -127,12 +126,12 @@ p_eu <- world |>
   filter(continent == "Europe") |> 
   st_crop(xmin = -800000, xmax = 3500000, ymin = 3100000, ymax = 7343000) |>
   ggplot() +
-  geom_sf(mapping = aes(geometry = geometry), fill = "grey80", colour = "white") +
+  geom_sf(mapping = aes(geometry = geometry), fill = col_paris[2], colour = "white", alpha = 0.8) +
   # team sizes
   geom_sf_interactive(
     dorl, mapping = aes(geometry = geometry, fill = continent,
                         tooltip = paste0(country_long, ": ", n_participants)),
-    color = alpha("white",0.2)
+    color = alpha("white", 0.2)
     ) +
   scale_fill_manual(values = alpha(col_continents, 0.8)) +
   theme_void() +
@@ -141,7 +140,7 @@ p_eu <- world |>
         legend.position = "none")
 
 girafe(ggobj = p_eu,
-       width_svg = 50, height_svg = 40) |> 
+       width_svg = 80) |> 
   girafe_options(
     opts_tooltip(
       use_fill = FALSE,
@@ -152,15 +151,9 @@ girafe(ggobj = p_eu,
 
 
 
-## COL: Nations table (medals)
+## COL: Nations summaries {width="33%"}
 
-```{r}
-#| label: country-codes
-
-#country_codes <- read.delim("data/countries_codes_and_coordinates.csv", header = T, sep = ",")
-# remove unwanted spaces
-#country_codes$Alpha.2.code <- gsub(" ", "", country_codes$Alpha.2.code)
-```
+### ROW: Nations table (medals)
 
 ```{r}
 #| label: helper-countries-with-flags
@@ -226,10 +219,10 @@ tab_nations |>
   cols_hide(columns = "flag") |> 
   # "string" column names
   cols_label(
-    ranking = html("Ranking &#x2195;"), 
+    ranking = "Rank", 
     iso_a2 = "", 
-    country_code = html("Country \n code &#x2195;"), 
-    country_long = html("Country &#x2195;"),
+    country_code = "", 
+    country_long = "Country",
     `Gold.Medal` = html(as.character(icon_style(fontawesome("medal"), scale = 1.75, fill = col_medals["Gold"]))),
     `Silver.Medal` = html(as.character(icon_style(fontawesome("medal"), scale = 1.75, fill = col_medals["Silver"]))),
     `Bronze.Medal` = html(as.character(icon_style(fontawesome("medal"), scale = 1.75, fill = col_medals["Bronze"])))
@@ -242,12 +235,12 @@ tab_nations |>
   cols_align(align = "center", columns = !contains("Country")) |> 
   # realtive column widths
   cols_width(
-    ranking ~ px(60),
-    iso_a2 ~ px(40),
-    country_code ~ px(50),
-    country_long ~ px(150),
-    contains("Medal") ~ px(50),
-    Total ~ px(50)
+    ranking ~ px(90),
+    iso_a2 ~ px(45),
+    country_code ~ px(75),
+    country_long ~ px(200),
+    contains("Medal") ~ px(75),
+    Total ~ px(75)
   ) |>
   # add interactivity
   opt_interactive(
@@ -257,7 +250,85 @@ tab_nations |>
   )
 ```
 
-<!-- gganimate for daily development in time ?-->
+### ROW: Development in time (gganimate)
+<!-- Aim: gganimate for daily development in medal counts for top ten nations -->
 
-<!-- Athletes sent vs with a medal - bar chart sorted by "success" percentage?-->
+```{r}
+# which are top ten nations?
+top_nations <- nations_dat[1:10, ]$country
+
+# colour scale for countries
+col_countries <- c(
+  "#FFCD00", "red", "#0055A4", "#000000",
+  "#CF142B", "#008C45", "grey70", "#0047A0",
+  "#FF9B00", "#0A3161"
+)
+names(col_countries) <- sort(top_nations)
+
+# prepare daily counts data
+# daily_medals_type <- medalists_dat |> 
+#   filter(country %in% top_nations) |> 
+#   group_by(country, medal_date, medal_type) |> 
+#   summarize(n_medals = n())
+
+daily_medals_totals <- medalists_dat |> 
+  filter(country %in% top_nations) |> 
+  group_by(country, medal_date) |> 
+  summarise(daily_medals = n()) |> 
+  group_by(country) |>  
+  mutate(cumsum_medals = cumsum(daily_medals),
+         medal_date = as.Date(medal_date))
+
+# the last row for each state is the total -> annotation placement
+medal_sums <- daily_medals_totals |> 
+  group_by(country) |> 
+  slice_tail()
+
+# first and last day of medal events are used repeatedly - store them as variables
+first_day <- as.Date(min(daily_medals_totals$medal_date))
+last_day <- as.Date(max(daily_medals_totals$medal_date))
+
+# plot
+p_cum_medals <- ggplot(daily_medals_totals, aes(x = medal_date, y = cumsum_medals, group = country, colour = country)) +
+  geom_line(linewidth = 1) +
+  geom_text_repel(
+    data = medal_sums,
+    aes(color = country, label = country),
+    size = 2.5,
+    direction = "y",
+    xlim = c(last_day, NA),
+    hjust = 0,
+    segment.size = 0.75,
+    segment.linetype = "dotted",
+    box.padding = .4,
+    segment.curvature = -0.1,
+    segment.ncp = 3,
+    segment.angle = 20
+  ) +
+  scale_x_date(breaks = seq(first_day, last_day, 1), date_labels = "%m-%d",
+               expand = c(0, 0), limits = as.Date(c(first_day, "2024-08-14"))) +
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 333)) +
+  scale_colour_manual(values = col_countries) +
+  labs(
+    x = "",
+    y = "cumulative count"
+  ) +
+  theme_classic() +
+  theme(
+    panel.background = element_blank(),
+    panel.grid = element_blank(),
+    axis.text.x = element_text(angle = 90, vjust = 0.5),
+    legend.position = "none",
+    aspect.ratio = 0.65
+  )
+
+# animate it!
+anim_cum_medals <- p_cum_medals +
+  transition_reveal(along = medal_date)
+
+animate(anim_cum_medals, nframes = 25, duration = 25, end_pause = 10)
+```
+
+
+<!-- Birth country vs nationality: sankey? -->
 
