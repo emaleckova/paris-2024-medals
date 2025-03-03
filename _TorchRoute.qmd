@@ -65,10 +65,10 @@ text(torch_coord[torch_coord$state == "Guadeloupe", ]$city, x = torch_coord[torc
 ```{r}
 # Route in France
 french_pairs <- city_pairs |> 
-  filter(state == "France")
+  filter(state == "France", )
 
 # I will label a few. I am subsetting by stage to remove duplicates
-stage_selection <- as.factor(c(3, 7, 10, 16, 24, 36, 37, 39, 43, 48, 55, 70))
+stage_selection <- as.factor(c(3, 7, 8, 10, 16, 24, 36, 37, 39, 43, 48, 55, 70))
 
 map("world", col = adjustcolor(col_paris[2], alpha.f = 0.75), fill = TRUE, bg = "white", lwd = 0.05, mar = rep(0,4), border = "white",
     xlim = c(-8, 10.5), ylim = c(42, 51.5))
