@@ -269,6 +269,10 @@ col_countries <- c(
 )
 names(col_countries) <- sort(top_nations)
 
+# start & end dates
+first_day <- as.Date(min(medalists_dat$medal_date))
+last_day <- as.Date(max(medalists_dat$medal_date))
+
 # cumulative sums per nation
 daily_medals_totals <- medalists_dat |> 
   filter(country %in% top_nations) |> 
@@ -291,10 +295,6 @@ daily_medals_totals <- medalists_dat |>
 medal_sums <- daily_medals_totals |> 
   group_by(country) |> 
   slice_tail()
-
-# first and last day of medal events are used repeatedly - store them as variables
-first_day <- as.Date(min(daily_medals_totals$medal_date))
-last_day <- as.Date(max(daily_medals_totals$medal_date))
 
 # plot; credits: https://github.com/z3tt/TidyTuesday/blob/main/R/2020_52_BigMacIndex.Rmd
 p_cum_medals <- ggplot(daily_medals_totals, aes(x = medal_date, y = cumsum_medals, group = country, colour = country)) +
@@ -365,7 +365,7 @@ events_cze <- medalists_dat |>
 
 # plot; credits: https://github.com/z3tt/TidyTuesday/blob/main/R/2020_52_BigMacIndex.Rmd
 p_cum_medals_cze <- ggplot(daily_medals_cze, aes(x = medal_date, y = cumsum_medals, group = country)) +
-  geom_line(linewidth = 1, colour = col_paris[4]) +
+  geom_line(linewidth = 1, colour = col_paris[3]) +
   scale_x_date(breaks = seq(first_day, last_day, 1), date_labels = "%m-%d",
                expand = c(0, 0), limits = as.Date(c(first_day, "2024-08-14"))) +
   scale_y_continuous(expand = c(0, 0), limits = c(0, 6), breaks = seq(0, 6, 2)) +
@@ -435,6 +435,7 @@ names(col_transfers) <- unique(athlete_transfers$group)
 ggplot(athlete_transfers, aes(y = Freq, axis1 = birth_country, axis2 = nationality, fill = group)) +
   geom_alluvium() + 
   scale_fill_manual(values = col_transfers) +
+  # can I achieve odds to the left and evens to the right for better spacing?
   geom_text_repel(
     data = filter(athlete_transfers, group != "rare", group != "minor"),
     aes(x = 2.2, label = group),
