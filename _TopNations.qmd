@@ -396,19 +396,6 @@ animate(anim_cum_medals_cze, nframes = 25, duration = 25, end_pause = 10)
 athletes_nat <- athletes_dat |> 
   select(birth_country, nationality)
 
-library(ggalluvial)
-library(RColorBrewer)
-
-athletes_nat |> 
-  filter(nchar(birth_country) > 0, birth_country != nationality) |> 
-  # Freq are counts for each known combination
-  group_by(birth_country, nationality) |> 
-  summarise(Freq = n()) |> 
-  ggplot(
-    aes(y = Freq,
-    axis1 = birth_country, axis2 = nationality)) +
-  geom_alluvium()
-
 # only flows with more than a single observation will be coloured somehow
 athlete_transfers <- athletes_nat |> 
   filter(nchar(birth_country) > 0, birth_country != nationality) |> 
@@ -417,9 +404,13 @@ athlete_transfers <- athletes_nat |>
   summarise(Freq = n()) |> 
   ungroup() |> 
   mutate(group = case_when(
-    Freq < 2 ~ "rare",
-    Freq > 1 & Freq < 6 ~ "minor",
-    TRUE ~ paste(birth_country, nationality, sep = " -> ")
+    Freq <= 2 ~ "max. 2 athletes",
+    Freq > 2 & Freq < 6 ~ "3 - 5 athletes",
+    TRUE ~ paste(birth_country, nationality, sep = " \U2192 ")
+  )) |> 
+  mutate(group_label = case_when(
+    grepl("\U2192", group) ~ group,
+    TRUE ~ NA
   )) |> 
   # sorts the data by Freq
   arrange(desc(Freq)) |> 
@@ -428,31 +419,40 @@ athlete_transfers <- athletes_nat |>
     nationality = factor(nationality, levels = unique(nationality))
   )
 
-# Add more colors to this palette :
+# add more colors to this palette :
 col_transfers <- c(colorRampPalette(col_paris[c(3, 1, 2)])(20), "grey30", "grey80")
 names(col_transfers) <- unique(athlete_transfers$group)
 
-ggplot(athlete_transfers, aes(y = Freq, axis1 = birth_country, axis2 = nationality, fill = group)) +
-  geom_alluvium() + 
+### Plot
+# major flows
+p_transfers <- ggplot(athlete_transfers, aes(y = Freq, axis1 = birth_country, axis2 = nationality, fill = group)) +
+  geom_alluvium(alpha = 0.8) +
   scale_fill_manual(values = col_transfers) +
-  # can I achieve odds to the left and evens to the right for better spacing?
-  geom_text_repel(
-    data = filter(athlete_transfers, group != "rare", group != "minor"),
-    aes(x = 2.2, label = group),
-    size = 1.5,
-    direction = "y",
-    xlim = c(2.2, NA),
-    hjust = 0,
-    segment.size = 0.75,
-    segment.linetype = "dotted",
-    box.padding = .4,
-    segment.curvature = -0.1,
-    segment.ncp = 3,
-    segment.angle = 20,
-    max.overlaps = 30
-  ) +
-  scale_x_continuous(expand = c(0, 0), limits = c(0.6, 3)) +
-  #theme_void() +
-  theme(legend.position = "none")
+  theme_void() +
+  theme(margin(0, 50, 0, 0, unit = "pt"),
+        legend.position = "none")
+
+# create only legend
+showtext::showtext_auto()
+dummy_plot <- ggplot(data.frame(
+  "Category" = factor(names(col_transfers), levels = names(col_transfers)),
+  "Value" = 1:length(col_transfers)
+  ), aes(x = Value, fill = Category)) +
+  geom_bar() +
+  scale_fill_manual(values = col_transfers, name = "Transfers") +
+  theme_void() +
+  theme(legend.position = "right")
+
+extract_legend <- function(plot) {
+  g <- ggplotGrob(plot)
+  legend <- g$grobs[which(sapply(g$grobs, function(x) x$name) == "guide-box")][[1]]
+  return(legend)
+}
+
+# Extract the legend
+legend_grob <- extract_legend(dummy_plot)
+  
+# combine
+grid.arrange(p_transfers, legend_grob, ncol = 2, widths = c(2.5, 4.5))
 ```
 
