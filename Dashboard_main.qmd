@@ -46,8 +46,12 @@ library(ggrepel)
 library(ggtext)
 library(scales)
 library(arcdiagram)
-# arc graph
+library(igraph)
 library(ggraph)
+library(ggalluvial)
+library(RColorBrewer)
+library(gridExtra)
+library(gtable)
 ```
 
 ```{r}
@@ -113,70 +117,76 @@ n_noc_medals <- length(unique(nations_dat$country_code))
 n_awards <- sum(schedule_dat$event_medal)
 ```
 
-## ROW: Intro {height="20%"}
+## ROW: Intro {height="21%"}
 
-::: {.div-intro style="font-size: 0.8em;"}
+::: {#div-intro style="font-size: 0.8em;"}
 The 33^rd^ Summer Olympic Games - or simply **Paris 2024** - came back to the capital of France after the 1900 and 1924 Games.
 
-Developments of the past century were reflected in the focus of the Games' organizers: gender equality and sustainability. The Paris Games also stood out with their Opening Ceremony - for the first time in modern Olympic history, it was held outside of a stadium. River Seine became the venue.
+Developments of the past century were reflected in the focus of the Games' organizers: gender equality and sustainability. The Paris Games also stood out with their Opening Ceremony - for the first time in modern Olympic history, the ceremony was held outside of a stadium. River Seine became the venue.
 
-Olympics are a global event, raising a lot of interest but also controversies. This dashboard celebrates sports achievments of the participants.
+Olympics are a global event, raising a lot of interest but also some controversies. This dashboard deliberately focus on sport achievements only.
 :::
 
-<!-- And torch and venues???-->
 
 ## ROW: Subset of cards
 
-### COL : Card 1 {height="20%"}
+### COL : Card 1
 ```{r}
 #| label: valuebox-medal-competitions
 
 bslib::value_box(
-  title = tags$h3("Medal ceremonies", style = "cont-size: 20px;"),
+  title = tags$h3("Medal ceremonies", style = "font-size: 18px;"),
   theme = "bg-theme-paris-dblue",
   showcase = bs_icon("award-fill"),
   value = tags$p(n_awards, style = "font-size: 42px; font-face: bold;")
 )
 ```
 
-### COL: Card 2 {height="20%"}
-
-```{r}
-#| label: valuebox-all-nocs
-
-bslib::value_box(
-  title = tags$h3("Registered NOCs", style = "cont-size: 20px;"),
-  theme = "bg-theme-paris-dblue",
-  showcase = bs_icon("globe2"),
-  value = tags$p(n_noc_all, style = "font-size: 42px; font-face: bold;")
-)
-```
-
-### COL: Card 3 {height="20%"}
+### COL: Card 2
 
 ```{r}
 #| label: valuebox-nocs-qual
 
 bslib::value_box(
-  title = tags$h3("Qualified NOCs", style = "cont-size: 20px;"),
+  title = tags$h3("Qualified NOCs", style = "font-size: 18px;"),
   theme = "bg-theme-paris-dblue",
   showcase = bs_icon("check2-all"),
   value = tags$p(n_noc_qualified, style = "font-size: 42px; font-face: bold;")
 )
 ```
 
-### COL: Card 4 {height="20%"}
+### COL: Card 3
+
+```{r}
+#| label: valuebox-all-nocs
+
+bslib::value_box(
+  title = tags$h3("Registered NOCs", style = "font-size: 18px;"),
+  theme = "bg-theme-paris-dblue",
+  showcase = bs_icon("globe2"),
+  value = tags$p(n_noc_all, style = "font-size: 42px; font-face: bold;")
+)
+```
+
+
+### COL: Card 4
 
 ```{r}
 #| label: valuebox-nocs-medals
 
 bslib::value_box(
-  title = tags$h3("NOCs with medalists", style = "cont-size: 20px;"),
+  title = tags$h3("Medal-winning NOCs", style = "font-size: 18px;"),
   theme = "bg-theme-paris-dblue",
   showcase = bs_icon("award"),
   value = tags$p(n_noc_medals, style = "font-size: 42px; font-face: bold;")
 )
 ```
+
+## ROW: Explanation {height="6%"}
+
+:::{#div-noc style="text-align: right; font-size: 0.8em;"}
+*NOC: national olympic committee*
+:::
 
 ## ROW: Genders
 
@@ -196,50 +206,33 @@ n_women <- athletes_dat |>
   nrow()
 ```
 
-### COL: Men's card {height="20%"}
+### COL: Men's card
 
 ```{r}
 #| label: valuebox-male-athletes
 
 bslib::value_box(
-  title = tags$h3("Male athletes", style = "cont-size: 20px;"),
+  title = tags$h3("Male athletes", style = "font-size: 18px;"),
   theme = "#000",
   showcase = bs_icon("gender-male"),
   value = tags$p(n_men, style = "font-size: 42px; font-face: bold;")
 )
 ```
 
-### COL: Women's card {height="20%"}
+### COL: Women's card
 
 ```{r}
 #| label: valuebox-female-athletes
 
 bslib::value_box(
-  title = tags$h3("Female athletes", style = "cont-size: 20px;"),
+  title = tags$h3("Female athletes", style = "font-size: 18px;"),
   theme = "bg-theme-paris-pink",
   showcase = bs_icon("gender-female"),
   value = tags$p(n_women, style = "font-size: 42px; font-face: bold;")
 )
 ```
 
-### COL: Facts about the Games {height="50%"}
-
-
-
-- mascot
-Named Olympic Phryge, the Paris 2024 mascot is based on the traditional small Phrygian hats that the mascots are shaped after.
-
-Its name and design were chosen as symbols of freedom and to represent allegorical figures of the French Republic.
-
-
-The Paris Games were exceptional in many other aspects - let's explore a selection together. 
-
-- torch
-Carried by 10,000 people over thousands of miles, the torch, crafted from metal by steel giant Arcelor Mittal, resembles an oval iron pipe with a rounded center.
-
-Upon its arrival, the torch will have been carried to more than 400 locations, including France's overseas territories, until the opening of the event on July 26.
-
-## ROW: Plot genders in time {height="50%" width="50%"}
+## ROW: Plot genders in time {height="45%"}
 
 ```{r}
 #| label: figure-historical-female-participation
@@ -260,8 +253,9 @@ p_genders <- female_dat |>
   scale_y_continuous(labels = scales::percent_format()) +
   labs(title = gender_plot_title) +
   theme_minimal() +
-  theme(plot.title = element_markdown(hjust = 0.5),
-        axis.text.x = element_text(angle = 90, hjust = 0.5, vjust = 0.5),
+  theme(plot.title = element_markdown(size = 15, hjust = 0.5),
+        axis.text.x = element_text(size = 14, angle = 90, hjust = 0.5, vjust = 0.5),
+        axis.text.y = element_text(size = 14),
         axis.title = element_blank(),
         aspect.ratio = 0.5,
         legend.position = "none")
@@ -272,28 +266,6 @@ anim_genders <- p_genders +
 animate(anim_genders, nframes = n_frames, duration = 14, end_pause = 7)
 ```
 
-<!-- Try removing team sports from the athlete counts by gender. -->
-```{r}
-#| eval: false
-
-teams_dat <- read.delim("data/teams.csv", sep = ",", header = T)
-
-library(splitstackshape)
-
-teams_dat <- cSplit(teams_dat, splitCols = "athletes", sep = ",", direction = "long")
-
-teams_by_gender <- teams_dat |> 
-  group_by(team_gender) |> 
-  summarize(n_athletes = n())
-
-n_men
-n_women
-
-n_men - teams_by_gender[teams_by_gender$team_gender == "M", ]$n_athletes
-n_women - teams_by_gender[teams_by_gender$team_gender == "W", ]$n_athletes
-```
-
-
 <!-- -------------------------------------------------------------------------- -->
 
 <!-- -------- -->
@@ -303,26 +275,42 @@ n_women - teams_by_gender[teams_by_gender$team_gender == "W", ]$n_athletes
 
 {{< include _TopNations.qmd >}}
 
+
+# Athletes & coaches {orientation="columns"}
+
+{{< include _Coaches.qmd >}}
+
+
 # Top medallists {orientation="columns"}
 
 {{< include _TopMedallists.qmd >}}
 
 
-# Coaches
-
-# Torch relay {orientation="columns"}
+# Torch relay {orientation="rows"}
 
 {{< include _TorchRoute.qmd >}}
 
 
-<!-- IDEAS: Total men and women, disciplines with most events/medals? -->
+<!-- --------------------------------------------------------- -->
 
 # About
 
 **Motivation:**  
 
-I made this website to practice use of Quarto dashboards and its deployment to public. I aimed to use packages and visualizations I have not used so far for work.
+I started this project to practice use of Quarto dashboards and deployment to public. Besides some of my favourite packages, I aimed to use packages and visualizations that I did not have a chance to use for my work yet.
 
 ## Acknowledgments
 
-<!-- elective RData/qs or pdfs??? -->
+**Data source:**  
+- Olympics statistics: https://www.kaggle.com/datasets/piterfm/paris-2024-olympic-summer-games?resource=download  
+- HEX colour codes from [Olympics Paris 2024 Color Palette](https://www.color-hex.com/color-palette/1049914)
+
+**Images:**  
+- https://press.paris2024.org/photos/paris2024-olyembleme-rvb-mono-blanc-2021-png-a812-7578a.html
+
+**Inspirations:**  
+The Internet is full of useful and inspiring resources which I probably used without being truly aware. Nonetheless, there are video tutorials and inspirational people I would like to mention:  
+- A [dashborad tutorial](https://www.youtube.com/watch?v=27Njh1i9-oM  ) by Melissa Van Bussel (ggnot2)  
+- A [tutorial series](https://www.youtube.com/watch?v=HW7QbqI4fH0  ) by Mine Çetinkaya-Rundel (Posit)  
+- tips and tutorials by Yan Holtz, Albert Rapp and Isabella Velásquez  
+
