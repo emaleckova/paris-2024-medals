@@ -1,159 +1,4 @@
-## COL: National team sizes
-
-```{r}
-#| label: prepare-team-sizes
-
-team_sizes <- athletes_dat |> 
-  group_by(country_long, country_code) |> 
-  summarize(n_participants = n())
-```
-
-### {.tabset}
-
-```{r}
-#| label: plot-team-sizes
-
-# AIM: Prepare by country participants as well as a simplified version with all European countries grouped
-
-# Prepare world map (credits: https://r-graph-gallery.com/web-dorling-cartogram-with-R.html)
-world <- ne_countries(scale = 110, type = "countries", returnclass = "sf") |> 
-  # Convert WGS84 to projected crs (here Robinson)
-  st_transform(world_ne, crs = "ESRI:54030")
-
-# Merge with teams sizes
-# Two column combination are used to cover more cases
-map_teams <- team_sizes |> 
-  left_join(select(world, iso_a2, iso_a3, name_long), by = c("country_code" = "iso_a3"))
-
-map_teams <- map_teams |> 
-  left_join(select(world, iso_a2, name_long), by = c("country_long" = "name_long"), suffix = c("", "_alt"))
-
-# Use coalesce to fill in missing values from the second join
-map_teams <- map_teams |> 
-  # sometimes only one of the geometries contains actual data - keep this one
-  mutate(
-    iso_a2 = coalesce(iso_a2, iso_a2_alt),
-    geometry = if_else(st_is_empty(geometry), geometry_alt, geometry)
-  ) |> 
-  select(-iso_a2_alt, -geometry_alt) |> 
-  drop_na(n_participants) |> 
-  filter(!st_is_empty(geometry)) |>  # filter out empty geometries
-  # include continent
-  left_join(select(world, iso_a2, continent)) |> 
-   # conversion after merging - needed by "dorling"
-  st_as_sf()
-
-### Group European countries
-
-# Europe has a lot of countries with strong participation.
-# For the world overview, group all European countries
-
-eu_grouped <- map_teams |> 
-  filter(continent == "Europe") |> 
-  group_by(continent) |> 
-  summarize(n_participants = sum(n_participants)) |> 
-  mutate(country_long = "Europe",
-         country_code = "Europe",
-         name_long = "European countries",
-         iso_a2 = NA,
-         geometry = map_teams[map_teams$country_code == "CZE", ]$geometry)
-
-map_teams_eu_grouped <- rbind.data.frame(filter(map_teams, continent != "Europe"), eu_grouped)
-map_teams_eu_grouped <- map_teams_eu_grouped |> 
-  st_as_sf()
-```
-
-#### World
-
-```{r}
-#| label: figure-participants-eu-grouped
-
-dorl <- cartogram_dorling(
-  map_teams_eu_grouped, weight = "n_participants",
-  k = 4, m_weight = 1, itermax = 1000
-  )
-
-# establish colour scale by continent
-# credits: https://www.alamy.com/world-continents-infographics-colors-vector-image346678213.html and https://www.color-hex.com/color-palette/31114
-col_continents <- c("#524595", "#0392cf", "#e86af0", "#ffbf00", "#95CA3E", "#F26923")
-names(col_continents) <- sort(unique(map_teams$continent))
-
-p_world <- ggplot() + 
-  # World basemap
-  geom_sf(
-    filter(world, admin != "Antarctica"), mapping = aes(geometry = geometry),
-    fill = col_paris[2], colour = "white", alpha = 0.8) +
-  # team sizes
-  geom_sf_interactive(
-    dorl, mapping = aes(geometry = geometry, fill = continent,
-                        tooltip = paste0(country_long, ": ", n_participants)),
-    color = alpha("white",0.2)
-    ) +
-  scale_fill_manual(values = alpha(col_continents, 0.8)) +
-  theme_void() +
-  theme(panel.background = element_rect(fill = "transparent", color = NA),
-        plot.background = element_rect(fill = "transparent", color = NA),
-        legend.position = "none")
-
-girafe(ggobj = p_world,
-       width_svg = 200, height_svg = 200) |> 
-  girafe_options(
-    opts_tooltip(
-      use_fill = FALSE,
-      css = "color:black;"
-    ),
-    opts_sizing(rescale = TRUE)
-  )
-```
-
-#### Europe
-
-```{r}
-#| label: figure-participants-eu-only
-
-dorl <- map_teams |> 
-  filter(continent == "Europe") |> 
-  # this is important to remove "territories" not on the main continent (except GB and IRL)
-  st_crop(xmin = -800000, xmax = 3500000, ymin = 3100000, ymax = 7343000) |> 
-  cartogram_dorling(
-    weight = "n_participants",
-    k = 2, m_weight = 1, itermax = 1000
-  )
-
-
-# crop basic map first
-p_eu <- world |> 
-  filter(continent == "Europe") |> 
-  st_crop(xmin = -800000, xmax = 3500000, ymin = 3100000, ymax = 7343000) |>
-  ggplot() +
-  geom_sf(mapping = aes(geometry = geometry), fill = col_paris[2], colour = "white", alpha = 0.8) +
-  # team sizes
-  geom_sf_interactive(
-    dorl, mapping = aes(geometry = geometry, fill = continent,
-                        tooltip = paste0(country_long, ": ", n_participants)),
-    color = alpha("white", 0.2)
-    ) +
-  scale_fill_manual(values = alpha(col_continents, 0.8)) +
-  theme_void() +
-  theme(panel.background = element_rect(fill = "transparent", color = NA),
-        plot.background = element_rect(fill = "transparent", color = NA),
-        legend.position = "none")
-
-girafe(ggobj = p_eu,
-       width_svg = 80) |> 
-  girafe_options(
-    opts_tooltip(
-      use_fill = FALSE,
-      css = "color:black;"
-    )
-  )
-```
-
-
-
-## COL: Nations summaries {width="33%"}
-
-### ROW: Nations table (medals)
+## COL: Medals by nation {width="50%"}
 
 ```{r}
 #| label: helper-countries-with-flags
@@ -169,7 +14,8 @@ ccodes <- tmp[["_data"]][["country_code_2"]]
 remove(tmp)
 ```
 
-<!-- Total counts? I.e, team of four contirbutes four medals even if it was a single medal ceremony.  -->
+<!-- Total counts? I.e, team of four contributer four medals even if it was a single medal ceremony.  -->
+
 
 ```{r}
 #| label: table-nations-ranking
@@ -239,7 +85,7 @@ tab_nations |>
     ranking ~ px(90),
     iso_a2 ~ px(45),
     country_code ~ px(75),
-    country_long ~ px(200),
+    country_long ~ px(300),
     contains("Medal") ~ px(75),
     Total ~ px(75)
   ) |>
@@ -251,13 +97,14 @@ tab_nations |>
   )
 ```
 
-### ROW: Development in time (gganimate)
-<!-- Aim: gganimate for daily development in medal counts for top ten nations -->
+## COL: Daily medals
 
-{.tabset}
+### {.tabset}
 
 #### Top 10 nations
 ```{r}
+#| label: figure-cumsum-medals-top
+
 # which are top ten nations?
 top_nations <- nations_dat[1:10, ]$country
 
@@ -302,7 +149,7 @@ p_cum_medals <- ggplot(daily_medals_totals, aes(x = medal_date, y = cumsum_medal
   geom_text_repel(
     data = medal_sums,
     aes(color = country, label = country),
-    size = 2.5,
+    size = 3.5,
     direction = "y",
     xlim = c(last_day, NA),
     hjust = 0,
@@ -325,9 +172,12 @@ p_cum_medals <- ggplot(daily_medals_totals, aes(x = medal_date, y = cumsum_medal
   theme(
     panel.background = element_blank(),
     panel.grid = element_blank(),
-    axis.text.x = element_text(angle = 90, vjust = 0.5),
+    axis.line.x = element_line(color = "grey50"),
+    axis.line.y = element_line(color = "grey50"),
+    axis.text.x = element_text(size = 14, angle = 90, vjust = 0.5),
+    axis.text.y = element_text(size = 14),
     legend.position = "none",
-    aspect.ratio = 0.65
+    aspect.ratio = 0.55
   )
 
 # animate it!
@@ -341,6 +191,8 @@ animate(anim_cum_medals, nframes = 25, duration = 25, end_pause = 10)
 #### Czech Republic
 
 ```{r}
+#| label: figure-cumsum-medals-cze
+
 # get cumulative sums
 daily_medals_cze <- medalists_dat |> 
   filter(country == "Czechia") |> 
@@ -352,7 +204,7 @@ daily_medals_cze <- medalists_dat |>
   mutate(medal_date = as.Date(medal_date)) |> 
   complete(medal_date = seq(first_day, last_day, by = "1 day"),
            country = "Czechia",
-           fill = list(daily_medals = 0)) |> 
+           fill = list(daily_medals = 0)) |>
   arrange(medal_date) |> 
   mutate(cumsum_medals = cumsum(daily_medals))
 
@@ -368,7 +220,7 @@ p_cum_medals_cze <- ggplot(daily_medals_cze, aes(x = medal_date, y = cumsum_meda
   geom_line(linewidth = 1, colour = col_paris[3]) +
   scale_x_date(breaks = seq(first_day, last_day, 1), date_labels = "%m-%d",
                expand = c(0, 0), limits = as.Date(c(first_day, "2024-08-14"))) +
-  scale_y_continuous(expand = c(0, 0), limits = c(0, 6), breaks = seq(0, 6, 2)) +
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 6), breaks = seq(2, 6, 2)) +
   scale_colour_manual(values = col_countries) +
   labs(
     x = "",
@@ -378,9 +230,12 @@ p_cum_medals_cze <- ggplot(daily_medals_cze, aes(x = medal_date, y = cumsum_meda
   theme(
     panel.background = element_blank(),
     panel.grid = element_blank(),
-    axis.text.x = element_text(angle = 90, vjust = 0.5),
+    axis.line.x = element_line(color = "grey50"),
+    axis.line.y = element_line(color = "grey50"),
+    axis.text.x = element_text(size = 14, angle = 90, vjust = 0.5),
+    axis.text.y = element_text(size = 14),
     legend.position = "none",
-    aspect.ratio = 0.65
+    aspect.ratio = 0.55
   )
 
 # animate it!
@@ -389,70 +244,3 @@ anim_cum_medals_cze <- p_cum_medals_cze +
 
 animate(anim_cum_medals_cze, nframes = 25, duration = 25, end_pause = 10)
 ```
-
-
-<!-- Birth country vs nationality: sankey? -->
-```{r}
-athletes_nat <- athletes_dat |> 
-  select(birth_country, nationality)
-
-# only flows with more than a single observation will be coloured somehow
-athlete_transfers <- athletes_nat |> 
-  filter(nchar(birth_country) > 0, birth_country != nationality) |> 
-  # Freq are counts for each known combination
-  group_by(birth_country, nationality) |> 
-  summarise(Freq = n()) |> 
-  ungroup() |> 
-  mutate(group = case_when(
-    Freq <= 2 ~ "max. 2 athletes",
-    Freq > 2 & Freq < 6 ~ "3 - 5 athletes",
-    TRUE ~ paste(birth_country, nationality, sep = " \U2192 ")
-  )) |> 
-  mutate(group_label = case_when(
-    grepl("\U2192", group) ~ group,
-    TRUE ~ NA
-  )) |> 
-  # sorts the data by Freq
-  arrange(desc(Freq)) |> 
-  mutate(
-    birth_country = factor(birth_country, levels = unique(birth_country)),
-    nationality = factor(nationality, levels = unique(nationality))
-  )
-
-# add more colors to this palette :
-col_transfers <- c(colorRampPalette(col_paris[c(3, 1, 2)])(20), "grey30", "grey80")
-names(col_transfers) <- unique(athlete_transfers$group)
-
-### Plot
-# major flows
-p_transfers <- ggplot(athlete_transfers, aes(y = Freq, axis1 = birth_country, axis2 = nationality, fill = group)) +
-  geom_alluvium(alpha = 0.8) +
-  scale_fill_manual(values = col_transfers) +
-  theme_void() +
-  theme(margin(0, 50, 0, 0, unit = "pt"),
-        legend.position = "none")
-
-# create only legend
-showtext::showtext_auto()
-dummy_plot <- ggplot(data.frame(
-  "Category" = factor(names(col_transfers), levels = names(col_transfers)),
-  "Value" = 1:length(col_transfers)
-  ), aes(x = Value, fill = Category)) +
-  geom_bar() +
-  scale_fill_manual(values = col_transfers, name = "Transfers") +
-  theme_void() +
-  theme(legend.position = "right")
-
-extract_legend <- function(plot) {
-  g <- ggplotGrob(plot)
-  legend <- g$grobs[which(sapply(g$grobs, function(x) x$name) == "guide-box")][[1]]
-  return(legend)
-}
-
-# Extract the legend
-legend_grob <- extract_legend(dummy_plot)
-  
-# combine
-grid.arrange(p_transfers, legend_grob, ncol = 2, widths = c(2.5, 4.5))
-```
-

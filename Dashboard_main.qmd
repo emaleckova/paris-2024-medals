@@ -273,6 +273,11 @@ animate(anim_genders, nframes = n_frames, duration = 14, end_pause = 7)
 
 # Participating nations {orientation="columns"}
 
+{{< include _AllNations.qmd >}}
+
+
+# Medals by nations {orientation="columns"}
+
 {{< include _TopNations.qmd >}}
 
 
@@ -310,7 +315,7 @@ I started this project to practice use of Quarto dashboards and deployment to pu
 
 **Inspirations:**  
 The Internet is full of useful and inspiring resources which I probably used without being truly aware. Nonetheless, there are video tutorials and inspirational people I would like to mention:  
-- A [dashborad tutorial](https://www.youtube.com/watch?v=27Njh1i9-oM  ) by Melissa Van Bussel (ggnot2)  
-- A [tutorial series](https://www.youtube.com/watch?v=HW7QbqI4fH0  ) by Mine Çetinkaya-Rundel (Posit)  
+- A [dashborad tutorial](https://www.youtube.com/watch?v=27Njh1i9-oM) by Melissa Van Bussel (ggnot2)  
+- A [tutorial series](https://www.youtube.com/watch?v=HW7QbqI4fH0) by Mine Çetinkaya-Rundel (Posit)  
 - tips and tutorials by Yan Holtz, Albert Rapp and Isabella Velásquez  
 
