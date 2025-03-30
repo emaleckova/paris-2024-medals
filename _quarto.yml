@@ -18,5 +18,7 @@ format:
       - visuals/css/gowun-dodum.css
     grid:
       sidebar-width: 150px
+    include-in-header: 
+      - text: <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 embed-resources: false
