@@ -53,15 +53,15 @@ for(i in 1:nrow(distance_pairs)){
   plot_my_connection(distance_pairs$long[i], distance_pairs$lat[i], distance_pairs$next_long[i], distance_pairs$next_lat[i])
 }
 # overseas points
-points(x = torch_coord[torch_coord$state != "France", ]$long, y = torch_coord[torch_coord$state != "France", ]$lat, col = col_paris[4], cex = 1, pch = 20)
+points(x = torch_coord[torch_coord$state != "France", ]$long, y = torch_coord[torch_coord$state != "France", ]$lat, col = col_paris[4], cex = 0.75, pch = 20)
 # continental france
 points(x = torch_coord[torch_coord$state == "France", ]$long, y = torch_coord[torch_coord$state == "France", ]$lat, col = col_paris[4], cex = 0.25, pch = 20)
 # label Olympia and overseas
 text(torch_coord[torch_coord$city == "Olympia" | torch_coord$state != "France" & torch_coord$city != "Athens" & torch_coord$state != "Martinique", ]$city,
      x = torch_coord[torch_coord$city == "Olympia" | torch_coord$state != "France" & torch_coord$city != "Athens" & torch_coord$state != "Martinique", ]$long,
      y = torch_coord[torch_coord$city == "Olympia" | torch_coord$state != "France" & torch_coord$city != "Athens" & torch_coord$state != "Martinique", ]$lat,  
-     col = col_paris[4], cex = 1, pos = 2)
-text(torch_coord[torch_coord$state == "Guadeloupe", ]$city, x = torch_coord[torch_coord$state == "Guadeloupe", ]$long, y = torch_coord[torch_coord$state == "Guadeloupe", ]$lat, col = col_paris[4], cex = 1, pos = 4)
+     col = col_paris[4], cex = 0.75, pos = 2)
+text(torch_coord[torch_coord$state == "Guadeloupe", ]$city, x = torch_coord[torch_coord$state == "Guadeloupe", ]$long, y = torch_coord[torch_coord$state == "Guadeloupe", ]$lat, col = col_paris[4], cex = 0.75, pos = 4)
 ```
 
 ### COL: France
@@ -85,8 +85,8 @@ map("france", regions = "Paris", col = col_paris[5], fill = TRUE, border = "whit
 for(i in 1:nrow(french_pairs)){
   plot_my_connection(french_pairs$long[i], french_pairs$lat[i], french_pairs$next_long[i], french_pairs$next_lat[i])
 }
-points(x = torch_coord$long, y = torch_coord$lat, col = col_paris[4], cex = 1, pch = 20)
+points(x = torch_coord$long, y = torch_coord$lat, col = col_paris[4], cex = 0.75, pch = 20)
 # label some cities
-text(torch_coord[torch_coord$stage_number %in% stage_selection, ]$city, x = torch_coord[torch_coord$stage_number %in% stage_selection, ]$long, y = torch_coord[torch_coord$stage_number %in% stage_selection, ]$lat, col = col_paris[4], cex = 1, pos = 2)
+text(torch_coord[torch_coord$stage_number %in% stage_selection, ]$city, x = torch_coord[torch_coord$stage_number %in% stage_selection, ]$long, y = torch_coord[torch_coord$stage_number %in% stage_selection, ]$lat, col = col_paris[4], cex = 0.75, pos = 2)
 ```
 
