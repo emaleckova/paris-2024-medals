@@ -53,6 +53,7 @@ tab_nations |>
   mutate(ranking = as.numeric(rownames(nations_dat)),
         flag = ifelse(iso_a2 %in% ccodes, iso_a2, NA)) |> 
   select(ranking, flag, iso_a2, country_code, country_long, contains("Medal"), Total) |> 
+  arrange(desc(Total)) |> 
   gt() |> 
   # add country flags
   fmt_flag(columns = iso_a2) |> 
@@ -217,7 +218,7 @@ events_cze <- medalists_dat |>
 
 # plot; credits: https://github.com/z3tt/TidyTuesday/blob/main/R/2020_52_BigMacIndex.Rmd
 p_cum_medals_cze <- ggplot(daily_medals_cze, aes(x = medal_date, y = cumsum_medals, group = country)) +
-  geom_line(linewidth = 1, colour = col_paris[3]) +
+  geom_line(linewidth = 1.5, colour = col_paris[3]) +
   scale_x_date(breaks = seq(first_day, last_day, 1), date_labels = "%m-%d",
                expand = c(0, 0), limits = as.Date(c(first_day, "2024-08-14"))) +
   scale_y_continuous(expand = c(0, 0), limits = c(0, 6), breaks = seq(2, 6, 2)) +
