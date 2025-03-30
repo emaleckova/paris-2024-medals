@@ -1,6 +1,6 @@
 ## COL: Coaches
 
-### ROW: Intro {height="20%"}
+### ROW: Intro {height="17%"}
 
 ::: {#div-intro-1 style="font-size: 0.9em;"}
 This section looks on twelve coaches responsible for the biggest number of athletes. Team spots (such as baskteball or football) were intentionally left out. It turns out that big training groups are common especially in rowing.
@@ -33,15 +33,16 @@ top_coaches_athletes <- athletes_dat |>
   arrange(desc(n_athletes)) |> 
   select(-n_athletes)
 
-#top_coaches_names <- unique(top_coaches$coach)
-
 # polish disicpline spelling
 top_coaches_athletes$disciplines <- str_sub(top_coaches_athletes$disciplines, 3, nchar(top_coaches_athletes$disciplines) - 2)
   
 # polish coach's name before adding it
-# (remove everything what is not a name or country code, line breaks for two coaches)
+# (remove everything what is not a name including country codes, line breaks for two coaches)
 top_coaches_athletes$coach <- gsub("National: ", "", top_coaches_athletes$coach)
 top_coaches_athletes$coach <- gsub("Club: ", "", top_coaches_athletes$coach)
+# country codes
+top_coaches_athletes$coach <- gsub("\\s*\\([^)]*\\)", ",", top_coaches_athletes$coach)
+top_coaches_athletes$coach <- gsub(",$", "", top_coaches_athletes$coach)
 top_coaches_athletes$coach <- gsub("([^,]*,[^,]*),", "\\1\n", top_coaches_athletes$coach)
 ```
 
@@ -112,12 +113,12 @@ ggraph(coaches_graph, layout = data.frame(x = V(coaches_graph)$order, y = 0)) +
     plot.margin = unit(c(0,0,0.4,0), "null"),
     panel.spacing = unit(c(0,0,3.4,0), "null")
   ) +
-  expand_limits(x = c(-1.2, 1.2), y = c(-6.5, 1.2))
+  expand_limits(x = c(-1.2, 1.2), y = c(-5, 1.2))
 ```
 
 ## COL: Athlete transfers
 
-### Intro {height="20%"}
+### Intro {height="17%"}
 
 ::: {#div-intro style="font-size: 0.9em;"}
 It is not rare for athletes not to represent the country they were born in. This figure looks at the most frequent transfers among participants of the PAris 2024 Olympics. Note that a contributor to change in nationality is also breakup of countries such as in case of Yugoslavia.
