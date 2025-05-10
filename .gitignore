@@ -157,7 +157,6 @@ _bookdown_files/
 # Quarto
 /.quarto/
 /_site/
-_site/
 
 # Various outputs
 *.png
