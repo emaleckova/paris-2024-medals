@@ -52,6 +52,7 @@ map("world", col = adjustcolor(col_paris[2], alpha.f = 0.75), fill = TRUE, bg = 
 for(i in 1:nrow(distance_pairs)){
   plot_my_connection(distance_pairs$long[i], distance_pairs$lat[i], distance_pairs$next_long[i], distance_pairs$next_lat[i])
 }
+
 # overseas points
 points(x = torch_coord[torch_coord$state != "France", ]$long, y = torch_coord[torch_coord$state != "France", ]$lat, col = col_paris[4], cex = 0.75, pch = 20)
 # continental france

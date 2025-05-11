@@ -37,6 +37,19 @@ torch_coord <- torch_coord |>
     TRUE ~ stage_number + 2
   ))
 
+# add missing coordinates
+torch_coord[torch_coord$city == "Athens", ]$lat <- 37.984167 
+torch_coord[torch_coord$city == "Athens", ]$long <- 23.728056
+
+torch_coord[torch_coord$city == "Olympia", ]$lat <- 37.638333
+torch_coord[torch_coord$city == "Olympia", ]$long <- 21.63
+
+torch_coord[torch_coord$city == "Parc Georges-Valbon", ]$lat <- 48.943487439975016
+torch_coord[torch_coord$city == "Parc Georges-Valbon", ]$long <- 2.3987462549502676
+
+torch_coord[torch_coord$city == "Lens-Liévin", ]$lat <- 50.43419023121203
+torch_coord[torch_coord$city == "Lens-Liévin", ]$long <- 2.80411044537625
+
 torch_coord$stage_number <- as.factor(torch_coord$stage_number)
 
 save(torch_coord, file = "data/torch_route_coordinates.RData")
