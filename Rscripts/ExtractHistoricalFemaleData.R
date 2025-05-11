@@ -1,5 +1,8 @@
+library(tabulapdf)
+library(tidyr)
+
 # An official factsheet by IOC
-female_pdf <- "data/Women-in-the-Olympic-Movement.pdf"
+female_pdf <- "data/sheets/Women-in-the-Olympic-Movement.pdf"
 # automatically detect tables
 female_tbls <- extract_tables(female_pdf, pages = 6)
 
@@ -25,3 +28,5 @@ female_dat$Prcnt_women_participants <- female_dat$Prcnt_women_participants/100
 
 # percentage of men can be calculated now
 female_dat$Prcnt_men_participants <- 1 - female_dat$Prcnt_women_participants
+
+save(female_dat, file = "data/female_historical.RData")

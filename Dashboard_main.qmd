@@ -21,7 +21,6 @@ execute:
 
 # data wrangling
 library(tidyverse)
-library()
 # html and icons
 library(htmltools)
 library(bslib)
