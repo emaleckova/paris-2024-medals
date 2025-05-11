@@ -1,4 +1,5 @@
 library(tidygeocoder)
+library(dplyr)
 
 torch_dat <- read.delim("data/torch_route.csv", sep = ",")
 
