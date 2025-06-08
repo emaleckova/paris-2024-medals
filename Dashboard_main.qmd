@@ -116,7 +116,7 @@ n_noc_medals <- length(unique(nations_dat$country_code))
 n_awards <- sum(schedule_dat$event_medal)
 ```
 
-## ROW: Intro {height="21%"}
+## ROW: Intro {height="22%"}
 
 ::: {#div-intro style="font-size: 0.8em;"}
 The 33^rd^ Summer Olympic Games - or simply **Paris 2024** - came back to the capital of France after the 1900 and 1924 Games.
@@ -127,7 +127,7 @@ Olympics are a global event, raising a lot of interest but also some controversi
 :::
 
 
-## ROW: Subset of cards
+## ROW: Subset of cards {height="20%"}
 
 ### COL : Card 1
 ```{r}
@@ -147,7 +147,7 @@ bslib::value_box(
 #| label: valuebox-nocs-qual
 
 bslib::value_box(
-  title = tags$h3("Qualified NOCs", style = "font-size: 18px;"),
+  title = tags$h3("Qualified nations", style = "font-size: 18px;"),
   theme = "bg-theme-paris-dblue",
   showcase = bs_icon("check2-all"),
   value = tags$p(n_noc_qualified, style = "font-size: 42px; font-face: bold;")
@@ -160,7 +160,7 @@ bslib::value_box(
 #| label: valuebox-all-nocs
 
 bslib::value_box(
-  title = tags$h3("Registered NOCs", style = "font-size: 18px;"),
+  title = tags$h3("Registered nations", style = "font-size: 18px;"),
   theme = "bg-theme-paris-dblue",
   showcase = bs_icon("globe2"),
   value = tags$p(n_noc_all, style = "font-size: 42px; font-face: bold;")
@@ -174,18 +174,12 @@ bslib::value_box(
 #| label: valuebox-nocs-medals
 
 bslib::value_box(
-  title = tags$h3("Medal-winning NOCs", style = "font-size: 18px;"),
+  title = tags$h3("Medal-winning nations", style = "font-size: 18px;"),
   theme = "bg-theme-paris-dblue",
   showcase = bs_icon("award"),
   value = tags$p(n_noc_medals, style = "font-size: 42px; font-face: bold;")
 )
 ```
-
-## ROW: Explanation {height="6%"}
-
-:::{#div-noc style="text-align: right; font-size: 0.8em;"}
-*NOC: national olympic committee*
-:::
 
 ## ROW: Genders
 
@@ -205,7 +199,9 @@ n_women <- athletes_dat |>
   nrow()
 ```
 
-### COL: Men's card
+## ROW: Genders
+
+### COL: Cards {width="30%"}
 
 ```{r}
 #| label: valuebox-male-athletes
@@ -214,24 +210,23 @@ bslib::value_box(
   title = tags$h3("Male athletes", style = "font-size: 18px;"),
   theme = "#000",
   showcase = bs_icon("gender-male"),
-  value = tags$p(n_men, style = "font-size: 42px; font-face: bold;")
+  value = tags$p(n_men, style = "font-size: 42px; font-face: bold;"),
+  max_height = "7em"
 )
-```
 
-### COL: Women's card
-
-```{r}
-#| label: valuebox-female-athletes
 
 bslib::value_box(
   title = tags$h3("Female athletes", style = "font-size: 18px;"),
   theme = "bg-theme-paris-pink",
   showcase = bs_icon("gender-female"),
-  value = tags$p(n_women, style = "font-size: 42px; font-face: bold;")
+  value = tags$p(n_women, style = "font-size: 42px; font-face: bold;"),
+  max_height = "7em"
 )
 ```
 
-## ROW: Plot genders in time {height="45%"}
+### COL: spacer {width="20%"}
+
+### COL: Plot in time {width="45%"}
 
 ```{r}
 #| label: figure-historical-female-participation
@@ -256,7 +251,7 @@ p_genders <- female_dat |>
         axis.text.x = element_text(size = 14, angle = 90, hjust = 0.5, vjust = 0.5),
         axis.text.y = element_text(size = 14),
         axis.title = element_blank(),
-        aspect.ratio = 0.5,
+        aspect.ratio = 0.65,
         legend.position = "none")
 
 anim_genders <- p_genders +
