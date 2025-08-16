@@ -4,18 +4,34 @@
 
 $font-size-root: 1.05em;
 
+// existing Sass terms
 $primary: #a499c3;
 $secondary: #002e54;
 $link-color: #1d87c2;
 
-$theme-paris-pink: #f292b7;
-$theme-paris-blue: #1d87c2;
-$theme-paris-dblue: #002e54;
-
 /*-- scss:rules --*/
 
-// Customizations of specific components
+// custom variables
+$paris-pink: #f292b7;
+$paris-blue: #1d87c2;
 
+// Add custom colors to the Bootstrap theme colors map
+$theme-colors: (
+  "theme-paris-pink": $paris-pink,
+  "theme-paris-blue": $paris-blue
+  );
+
+// Manually define the custom background utility class
+.bg-theme-paris-blue {
+  background-color: $paris-blue !important;
+}
+
+// Manually define the custom background utility class
+.bg-theme-paris-pink {
+  background-color: $paris-pink !important;
+}
+
+// Customizations of specific components
 
 /* navigation bar basic */
 .navbar {

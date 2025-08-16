@@ -130,13 +130,13 @@ Olympics are a global event, raising a lot of interest but also some controversi
 
 ## ROW: Subset of cards {height="20%"}
 
-### COL : Card 1
+### COL: Card 1
 ```{r}
 #| label: valuebox-medal-competitions
 
 bslib::value_box(
   title = tags$h3("Medal ceremonies", style = "font-size: 18px;"),
-  theme = "bg-theme-paris-dblue",
+  class = "bg-secondary",
   showcase = bs_icon("award-fill"),
   value = tags$p(n_awards, style = "font-size: 42px; font-face: bold;")
 )
@@ -149,7 +149,7 @@ bslib::value_box(
 
 bslib::value_box(
   title = tags$h3("Qualified nations", style = "font-size: 18px;"),
-  theme = "bg-theme-paris-dblue",
+  class = "bg-primary",
   showcase = bs_icon("check2-all"),
   value = tags$p(n_noc_qualified, style = "font-size: 42px; font-face: bold;")
 )
@@ -162,7 +162,7 @@ bslib::value_box(
 
 bslib::value_box(
   title = tags$h3("Registered nations", style = "font-size: 18px;"),
-  theme = "bg-theme-paris-dblue",
+  class = "bg-primary",
   showcase = bs_icon("globe2"),
   value = tags$p(n_noc_all, style = "font-size: 42px; font-face: bold;")
 )
@@ -176,7 +176,7 @@ bslib::value_box(
 
 bslib::value_box(
   title = tags$h3("Medal-winning nations", style = "font-size: 18px;"),
-  theme = "bg-theme-paris-dblue",
+  class = "bg-secondary",
   showcase = bs_icon("award"),
   value = tags$p(n_noc_medals, style = "font-size: 42px; font-face: bold;")
 )
@@ -209,7 +209,7 @@ n_women <- athletes_dat |>
 
 bslib::value_box(
   title = tags$h3("Male athletes", style = "font-size: 18px;"),
-  theme = "#000",
+  class = "bg-theme-paris-blue",
   showcase = bs_icon("gender-male"),
   value = tags$p(n_men, style = "font-size: 42px; font-face: bold;"),
   max_height = "7em"
@@ -218,7 +218,7 @@ bslib::value_box(
 
 bslib::value_box(
   title = tags$h3("Female athletes", style = "font-size: 18px;"),
-  theme = "bg-theme-paris-pink",
+  class = "bg-theme-paris-pink",
   showcase = bs_icon("gender-female"),
   value = tags$p(n_women, style = "font-size: 42px; font-face: bold;"),
   max_height = "7em"
@@ -306,7 +306,8 @@ I started this project to practice use of Quarto dashboards and deployment to pu
 - HEX colour codes from [Olympics Paris 2024 Color Palette](https://www.color-hex.com/color-palette/1049914)
 
 **Images:**  
-- https://press.paris2024.org/photos/paris2024-olyembleme-rvb-mono-blanc-2021-png-a812-7578a.html
+- [Paris 2024 logo](https://press.paris2024.org/photos/paris2024-olyembleme-rvb-mono-blanc-2021-png-a812-7578a.ht)ml
+- [Torch image: Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Relais_de_la_flamme_olympique_Paris_2024_%C3%A0_Saverne_-_102.jpg)
 
 **Inspirations:**  
 The Internet is full of useful and inspiring resources which I probably used without being truly aware. Nonetheless, there are video tutorials and inspirational people I would like to mention:  
