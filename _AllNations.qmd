@@ -1,4 +1,6 @@
-## COL {width="35%"}
+---
+orientation: columns
+---
 
 
 ```{r}
@@ -9,10 +11,9 @@ team_sizes <- athletes_dat |>
   summarize(n_participants = n())
 ```
 
-### {.tabset}
-
 ```{r}
 #| label: plot-team-sizes
+#| include: false
 
 # AIM: Prepare by country participants as well as a simplified version with all European countries grouped
 
@@ -64,6 +65,11 @@ map_teams_eu_grouped <- map_teams_eu_grouped |>
   st_as_sf()
 ```
 
+
+## COLUMN
+
+### Maps {.tabset}
+
 #### World
 
 ```{r}
@@ -96,16 +102,18 @@ p_world <- ggplot() +
         plot.background = element_rect(fill = "transparent", color = NA),
         legend.position = "none")
 
-girafe(ggobj = p_world,
-       width_svg = 500, height_svg = 500) |> 
+girafe(ggobj = p_world, width_svg = 11, height_svg = 5) |> 
   girafe_options(
     opts_tooltip(
       use_fill = FALSE,
-      css = "color:black;"
+      css = "font-family:gowun-dodum;background-color:#ffffff;color:black;padding:5px;border-radius:5px;"
     ),
-    opts_sizing(rescale = TRUE)
+    opts_toolbar(position = "bottom", hidden = c("saveaspng", "zoom_onoff"), fixed = TRUE),
+    opts_zoom(min = 0.8, max = 2),
+    opts_sizing(rescale = FALSE, width = 1)
   )
 ```
+
 
 #### Europe
 
@@ -140,13 +148,15 @@ p_eu <- world |>
         plot.background = element_rect(fill = "transparent", color = NA),
         legend.position = "none")
 
-girafe(ggobj = p_eu,
-       width_svg = 500, height_svg = 500) |> 
+girafe(ggobj = p_eu, width_svg = 11, height_svg = 5) |> 
   girafe_options(
     opts_tooltip(
       use_fill = FALSE,
-      css = "color:black;"
-    )
+      css = "font-family:gowun-dodum;background-color:#ffffff;color:black;padding:5px;border-radius:5px;"
+    ),
+    opts_toolbar(position = "bottom", hidden = c("saveaspng", "zoom_onoff"), fixed = TRUE),
+    opts_zoom(min = 0.8, max = 2),
+    opts_sizing(rescale = FALSE, width = 1)
   )
 ```
 
