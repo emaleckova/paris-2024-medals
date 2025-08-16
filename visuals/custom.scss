@@ -48,3 +48,8 @@ $theme-paris-dblue: #002e54;
   color: white;
 }
 
+/* Target the SVG icons inside the toolbar and change their fill color */
+.ggiraph-toolbar-icon {
+    fill: #a499c3 !important;
+    stroke: #a499c3 !important;
+}
