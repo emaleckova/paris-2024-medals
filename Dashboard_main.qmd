@@ -1,6 +1,7 @@
 ---
 format:
   dashboard:
+    title: "Dashboard"
     logo: images/Paris2024_Mono_Blanc.png
     orientation: rows
     main-font: gowun-dodum
@@ -262,8 +263,8 @@ animate(anim_genders, nframes = n_frames, duration = 14, end_pause = 7)
 
 <!-- -------------------------------------------------------------------------- -->
 
-<!-- -------- -->
-<!-- New page -->
+<!-- ------------ -->
+<!-- Content tabs -->
 
 # Participating nations {orientation="columns"}
 
